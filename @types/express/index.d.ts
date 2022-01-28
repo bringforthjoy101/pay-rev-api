@@ -11,14 +11,14 @@ declare global {
 		interface ProcessEnv {
 			NODE_ENV: string;
 			PORT: string;
-			SSL: boolean;
+			SSL: string;
 			JWTSECRET: string;
 			JWT_EXPIRY_TIME: string;
 			DBNAME: string;
 			DBUSERNAME: string;
 			DBPASSWORD: string;
 			DBHOST: string;
-			DBPORT: number;
+			DBPORT: string;
 			DBDIALECT: string;
 			MAIL_FROM: string;
 			MAIL_FROM_NAME: string;
@@ -28,7 +28,7 @@ declare global {
 			TWILLIO_MESSAGE_SERVICE_ID: string;
 			PAYMENT_AUTH: string;
 			PAYMENT_BASE_URL: string;
-			PUBLIC_ROUTES: string[];
+			PUBLIC_ROUTES: string;
 		}
 	}
 }
