@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "es6",
+      "rootDir": "./",
+      "outDir": "./build",
+      "esModuleInterop": true,
+      "strict": true,
+      "typeRoots": [
+        "./@types",
+        "./node_modules/@types"
+      ]
+    },
+}
