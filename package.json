@@ -7,8 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "nodemon app.ts",
     "build": "tsc --project ./",
-    "start": "ts-node app.ts"
+    "start": "node build/app.js",
+    "postinstall": "tsc"
   },
+  "engines": { "node": "14.17.3" },
   "author": "",
   "license": "ISC",
   "devDependencies": {
