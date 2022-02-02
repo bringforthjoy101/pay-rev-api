@@ -63,6 +63,7 @@ router.post('/revenue/create', revenueHead.createRevenueHead);
 router.post('/revenue/update/:id', revenueHead.updateRevenueHead);
 
 router.post('/payment/log', payments.logPayment);
+router.get('/payments', payments.getPaymentLogs);
 router.post('/payment/webhook', payments.paymentWebhook);
 
 export default router;

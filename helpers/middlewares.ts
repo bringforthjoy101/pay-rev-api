@@ -15,6 +15,7 @@ export const isAuthorized = async (req: Request, res: Response, next: NextFuncti
 	const publicRoutes: string[] = config.PUBLIC_ROUTES;
 
 	if (publicRoutes.includes(route)) return next();
+	console.log(route);
 
 	let token: any = req.headers.authorization;
 	if (!token) return handleResponse(res, 401, false, `Access Denied / Unauthorized request`);
