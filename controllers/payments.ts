@@ -108,7 +108,16 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 		if (req.agent) {
 			where.businessId = req.agent.businessId;
 		}
-		const paymentLogs = await DB.paymentReports.findAll({ where, order: [['id', 'DESC']] });
+		const paymentLogs = await DB.paymentReports.findAll({
+			where,
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.branches, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.agents, as: 'agent', attributes: { exclude: ['createdAt', 'updatedAt', 'password'] } },
+			],
+			order: [['id', 'DESC']],
+		});
 		if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
 		return successResponse(res, `${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`, paymentLogs);
 	} catch (error) {
@@ -127,7 +136,12 @@ const getPaymentLogDetails = async (req: Request, res: Response) => {
 	try {
 		const paymentLog = await DB.paymentReports.findOne({
 			where: { transRef },
-			include: [{ model: DB.businesses }, { model: DB.branch }, { model: DB.revenueHeads }, { model: DB.agents, as: 'agent' }],
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.branches, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.agents, as: 'agent', attributes: { exclude: ['createdAt', 'updatedAt', 'password'] } },
+			],
 		});
 		if (!paymentLog) return errorResponse(res, `Payment log with transRef ${transRef} not found!`);
 		return successResponse(res, `Address details retrived!`, paymentLog);
