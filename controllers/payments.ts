@@ -119,7 +119,22 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			order: [['id', 'DESC']],
 		});
 		if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
-		return successResponse(res, `${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`, paymentLogs);
+		return successResponse(
+			res,
+			`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
+			paymentLogs.map((log: any) => {
+				return {
+					sn: log.id,
+					date: log.createdAt,
+					name: log.payeeName,
+					id: log.transRef,
+					agencyName: log.branch.name,
+					revenueHead: log.revenueHead.name,
+					amount: log.amount,
+					status: 'pending',
+				};
+			})
+		);
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occured - ${error}`);
