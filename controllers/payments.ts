@@ -123,15 +123,18 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			res,
 			`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
 			paymentLogs.map((log: any) => {
+				const { id, createdAt, payeeName, transRef, branch, revenueHead, amount, respDescription, agent } = log;
 				return {
-					sn: log.id,
-					date: log.createdAt,
-					name: log.payeeName,
-					id: log.transRef,
-					agencyName: log.branch.name,
-					revenueHead: log.revenueHead.name,
-					amount: log.amount,
+					id,
+					payeeName,
+					transRef,
+					description: respDescription,
+					agencyName: branch.name,
+					revenueHead: revenueHead.name,
+					agent: agent.name,
+					amount,
 					status: 'pending',
+					createdAt,
 				};
 			})
 		);
