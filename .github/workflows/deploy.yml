@@ -54,7 +54,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            bash node_back.sh
+            bash payrev_api.sh
             
        # Remove Github Action IP
       - name: Remove Github Actions IP from security group
