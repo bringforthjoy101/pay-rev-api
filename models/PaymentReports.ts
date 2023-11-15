@@ -2,10 +2,17 @@
 PAYMENT REPORTS TABLE
 *************************************************************************/
 
+import { DataTypes } from 'sequelize';
+
 export default function (sequelize: any, Sequelize: any) {
 	var PaymentReports = sequelize.define(
 		'paymentReports',
 		{
+			id: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4,
+				primaryKey: true,
+			},
 			payeeName: {
 				type: Sequelize.STRING,
 				allowNull: false,

@@ -2,10 +2,17 @@
 REVENUE HEADS TABLE
 *************************************************************************/
 
+import { DataTypes } from 'sequelize';
+
 export default function (sequelize: any, Sequelize: any) {
 	var RevenueHeads = sequelize.define(
 		'revenueHeads',
 		{
+			id: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4,
+				primaryKey: true,
+			},
 			name: {
 				type: Sequelize.STRING,
 				allowNull: false,

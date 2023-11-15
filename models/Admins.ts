@@ -2,10 +2,17 @@
 ADMINS TABLE
 *************************************************************************/
 
+import { DataTypes } from 'sequelize';
+
 export default (sequelize: any, Sequelize: any) => {
 	var Admins = sequelize.define(
 		'admins',
 		{
+			id: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4,
+				primaryKey: true,
+			},
 			names: {
 				type: Sequelize.STRING,
 				allowNull: false,

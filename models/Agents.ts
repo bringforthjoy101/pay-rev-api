@@ -2,10 +2,17 @@
 USERS TABLE
 *************************************************************************/
 
+import { DataTypes } from 'sequelize';
+
 export default function (sequelize: any, Sequelize: any) {
 	var Agents = sequelize.define(
 		'agents',
 		{
+			id: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4,
+				primaryKey: true,
+			},
 			names: {
 				type: Sequelize.STRING,
 				allowNull: false,
