@@ -31,7 +31,7 @@ export const register = async (req: Request, res: Response) => {
 	const salt: string = await bcrypt.genSalt(15);
 	const hashPassword: string = await bcrypt.hash(password, salt);
 
-	let insertData: RegisterDataType = { names, phone, email, password: hashPassword };
+	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId, branchId };
 
 	try {
 		const agentExists: any = await DB.agents.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
@@ -42,7 +42,7 @@ export const register = async (req: Request, res: Response) => {
 		const agent: any = await DB.agents.create(insertData);
 
 		if (agent) {
-			await DB.agentSettings.create({ agentId: agent.id });
+			await DB.agentSettings.create({ agentId: agent.dataValues.id });
 			// let payload: AuthPayloadDataType = {
 			// 	id: agent.id,
 			// 	names,

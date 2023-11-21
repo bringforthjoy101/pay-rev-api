@@ -16,9 +16,9 @@ const createBranch = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { name, businessId } = req.body;
+	const { name, businessId, address } = req.body;
 
-	const insertData: BranchDataType = { name, businessId };
+	const insertData: BranchDataType = { name, businessId, address };
 
 	try {
 		const branchExists: any = await DB.branches.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });

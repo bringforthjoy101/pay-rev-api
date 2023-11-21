@@ -25,6 +25,22 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.ENUM('active', 'inactive'),
 				defaultValue: 'inactive',
 			},
+			businessId: {
+				type: Sequelize.UUID,
+				allowNull: false,
+				references: {
+					model: 'businesses',
+					key: 'id',
+				},
+			},
+			branchId: {
+				type: Sequelize.UUID,
+				allowNull: false,
+				references: {
+					model: 'branches',
+					key: 'id',
+				},
+			},
 		},
 		{
 			freezeTableName: true,

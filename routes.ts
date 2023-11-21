@@ -47,7 +47,7 @@ router.post('/business/update/:id', isAdmin([AdminRoles.CONTROL]), business.upda
 router.get('/branch/:status?', branch.getBranches);
 router.get('/branch/get-details/:id', validate('id'), branch.getBranchDetails);
 router.get('/branch/delete/:id', validate('id'), branch.getBranchDetails);
-router.post('/branch/create', branch.createBranch);
+router.post('/branch/create', isAdmin([AdminRoles.CONTROL]), validate('branch'), branch.createBranch);
 router.post('/branch/update/:id', branch.updateBranch);
 
 router.get('/category/:status?', category.getCategories);

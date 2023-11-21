@@ -3,6 +3,8 @@ export type RegisterDataType = {
 	phone: string;
 	email: string;
 	password: string;
+	businessId?: string;
+	branchId?: string;
 	role?: string;
 };
 
@@ -147,6 +149,7 @@ export type IdsDataType = {
 
 export type BranchDataType = {
 	name: string;
+	address: string;
 	businessId: number;
 	status?: ModelStatus;
 };

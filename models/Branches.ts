@@ -2,7 +2,7 @@
 BRANCHES TABLE
 *************************************************************************/
 
-import { DataTypes } from "sequelize";
+import { DataTypes } from 'sequelize';
 
 export default function (sequelize: any, Sequelize: any) {
 	var Branches = sequelize.define(
@@ -21,18 +21,17 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			state: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			lga: {
-				type: Sequelize.STRING,
-			},
-			email: { type: Sequelize.STRING },
-			phone: { type: Sequelize.STRING },
 			status: {
 				type: Sequelize.ENUM('active', 'inactive'),
 				defaultValue: 'inactive',
+			},
+			businessId: {
+				type: Sequelize.UUID,
+				allowNull: false,
+				references: {
+					model: 'businesses',
+					key: 'id',
+				},
 			},
 		},
 		{
@@ -41,8 +40,8 @@ export default function (sequelize: any, Sequelize: any) {
 	);
 
 	Branches.associate = function (models: any) {
-		models.branches.hasMany(models.agents, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'branchId' });
-		models.branches.hasMany(models.revenueHeads, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'branchId' });
+		models.branches.hasMany(models.agents, { onDelete: 'cascade', foreignKey: 'branchId' });
+		models.branches.hasMany(models.revenueHeads, { onDelete: 'cascade', foreignKey: 'branchId' });
 		models.branches.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 	};
 
