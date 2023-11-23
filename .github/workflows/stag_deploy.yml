@@ -1,0 +1,67 @@
+name: Deploy-to-Pay-Rev-Stag-Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Server on Staging branch push
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout the files
+        uses: actions/checkout@v3
+        
+      - name: Get runner IP
+        run: |
+          ip=`curl https://ipinfo.io/ip`
+          echo $ip
+          echo "action_runner_ip=$ip" >> $GITHUB_ENV
+      - name: Add Github Actions IP to Security group as a inbound rule
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_PROD_SECURITY_GROUP_ID }} --protocol tcp --port ${{ secrets.PORT }} --cidr ${{ env.action_runner_ip }}/32
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}  
+        
+#       - name: Install Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16.x'
+#       - name: Install yarn
+#         run: npm install -g yarn
+#       - name: Install dependencies
+#         run: yarn install
+#       - name: Run build task
+#         run: yarn build 
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.DEPLOY_SERVER }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          TARGET: ${{ secrets.DEPLOY_APP_DIR }}
+          EXCLUDE: "/.git/, /.github/, /node_modules/, .gitignore/, .gitlab-ci.yml/"
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            bash payrev_api.sh
+            
+       # Remove Github Action IP
+      - name: Remove Github Actions IP from security group
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_PROD_SECURITY_GROUP_ID }} --protocol tcp --port ${{ secrets.PORT }} --cidr ${{ env.action_runner_ip }}/32
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        if: always()      
