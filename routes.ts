@@ -32,7 +32,7 @@ router.post('/change-password', validate('/change-password'), changePassword);
 router.post('/verify-otp', validate('/verify-otp'), verifyOtp);
 router.post('/update-user-settings', validate('/update-user-settings'), updateUserSettings);
 
-router.post('/admin/register', isAdmin([AdminRoles.CONTROL]), validate('/register'), admin.register);
+router.post('/admin/register', validate('/register'), admin.register);
 router.post('/admin/login', validate('/login'), admin.login);
 router.post('/admin/update-password', validate('/update-password'), admin.updatePassword);
 router.post('/admin/reset-password', validate('/reset-password'), admin.resetPassword);
