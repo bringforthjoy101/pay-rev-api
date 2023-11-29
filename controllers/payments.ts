@@ -38,7 +38,7 @@ const logPayment = async (req: Request, res: Response) => {
 		businessId,
 		branchId,
 		revenueHeadId,
-		agentId: req.agent.id,
+		agentId: req.staff.id,
 	};
 	try {
 		const logPayment: any = await DB.paymentReports.create(insertData);
@@ -105,8 +105,8 @@ const logPayment = async (req: Request, res: Response) => {
 const getPaymentLogs = async (req: Request, res: Response) => {
 	try {
 		const where: any = {};
-		if (req.agent) {
-			where.businessId = req.agent.businessId;
+		if (req.staff) {
+			where.businessId = req.staff.businessId;
 		}
 		const paymentLogs = await DB.paymentReports.findAll({
 			where,

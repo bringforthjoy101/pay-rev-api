@@ -25,10 +25,11 @@ export const isAuthorized = async (req: Request, res: Response, next: NextFuncti
 		if (token === 'null' || !token) return handleResponse(res, 401, false, `Unauthorized request`);
 		let verified: any = jwt.verify(token, config.JWTSECRET);
 		if (!verified) return handleResponse(res, 401, false, `Unauthorized request`);
+
 		if (verified.type === 'admin') {
 			req.admin = verified;
 		} else {
-			req.agent = verified;
+			req.staff = verified;
 		}
 		next();
 	} catch (error) {
@@ -41,6 +42,14 @@ export const isAdmin = (roles: string[]) => {
 		if (!req.admin) return handleResponse(res, 401, false, `Unauthorized access`);
 		if (!roles.includes(req.admin.role)) return handleResponse(res, 401, false, `Permission denied`);
 		next();
+	};
+};
+
+export const isAdminOrStaff = (adminRoles: string[], staffRoles: string[]) => {
+	return (req: Request, res: Response, next: NextFunction) => {
+		if (!req.admin && !req.staff) return handleResponse(res, 401, false, `Unauthorized access`);
+		if ((req.admin && adminRoles.includes(req.admin.role)) || (req.staff && staffRoles.includes(req.staff.role))) next();
+		else return handleResponse(res, 401, false, `Permission denied`);
 	};
 };
 

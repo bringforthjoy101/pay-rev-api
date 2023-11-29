@@ -33,11 +33,11 @@ export default function (sequelize: any, Sequelize: any) {
 					key: 'id',
 				},
 			},
-			branchId: {
+			mdaId: {
 				type: Sequelize.UUID,
 				allowNull: false,
 				references: {
-					model: 'branches',
+					model: 'mdas',
 					key: 'id',
 				},
 			},
@@ -49,7 +49,7 @@ export default function (sequelize: any, Sequelize: any) {
 
 	RevenueHeads.associate = function (models: any) {
 		models.revenueHeads.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-		models.revenueHeads.belongsTo(models.branches, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'branchId' });
+		models.revenueHeads.belongsTo(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'mdaId' });
 	};
 
 	return RevenueHeads;

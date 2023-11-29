@@ -42,8 +42,8 @@ export default function (sequelize: any, Sequelize: any) {
 	);
 
 	Businesses.associate = function (models: any) {
-		models.businesses.hasMany(models.agents, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-		models.businesses.hasMany(models.branches, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
+		models.businesses.hasMany(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
+		models.businesses.hasMany(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 		models.businesses.hasMany(models.categories, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 	};
 

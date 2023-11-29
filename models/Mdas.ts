@@ -5,8 +5,8 @@ BRANCHES TABLE
 import { DataTypes } from 'sequelize';
 
 export default function (sequelize: any, Sequelize: any) {
-	var Branches = sequelize.define(
-		'branches',
+	var Mdas = sequelize.define(
+		'mdas',
 		{
 			id: {
 				type: Sequelize.UUID,
@@ -39,11 +39,11 @@ export default function (sequelize: any, Sequelize: any) {
 		}
 	);
 
-	Branches.associate = function (models: any) {
-		models.branches.hasMany(models.agents, { onDelete: 'cascade', foreignKey: 'branchId' });
-		models.branches.hasMany(models.revenueHeads, { onDelete: 'cascade', foreignKey: 'branchId' });
-		models.branches.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
+	Mdas.associate = function (models: any) {
+		// models.branches.hasMany(models.agents, { onDelete: 'cascade', foreignKey: 'branchId' });
+		models.mdas.hasMany(models.revenueHeads, { onDelete: 'cascade', foreignKey: 'mdaId' });
+		models.mdas.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 	};
 
-	return Branches;
+	return Mdas;
 }

@@ -27,7 +27,7 @@ const createBusiness = async (req: Request, res: Response) => {
 		const business: any = await DB.businesses.create(insertData);
 
 		if (business) {
-			await DB.branches.create({ name: 'Main Branch', address: business.address, state: business.state, businessId: business.id });
+			// await DB.Mdas.create({ name: 'Main Branch', address: business.address, state: business.state, businessId: business.id });
 			return successResponse(res, `Business creation successfull`);
 		}
 		return errorResponse(res, `An error occured`);

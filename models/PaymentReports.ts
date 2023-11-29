@@ -48,9 +48,9 @@ export default function (sequelize: any, Sequelize: any) {
 
 	PaymentReports.associate = function (models: any) {
 		models.paymentReports.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-		models.paymentReports.belongsTo(models.branches, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'branchId' });
+		models.paymentReports.belongsTo(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'mdaId' });
 		models.paymentReports.belongsTo(models.revenueHeads, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'revenueHeadId' });
-		models.paymentReports.belongsTo(models.agents, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'agentId' });
+		models.paymentReports.belongsTo(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
 	};
 
 	return PaymentReports;

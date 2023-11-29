@@ -3,7 +3,7 @@ export {};
 declare global {
 	namespace Express {
 		interface Request {
-			agent?: any;
+			staff?: any;
 			admin?: any;
 		}
 	}

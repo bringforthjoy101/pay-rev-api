@@ -5,12 +5,12 @@ import { NextFunction, Router } from 'express';
 import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings } from './controllers/authentication';
 import admin from './controllers/admins';
 import business from './controllers/businesses';
-import branch from './controllers/branches';
+import mda from './controllers/mdas';
 import category from './controllers/categories';
 import revenueHead from './controllers/revenueHeads';
 import validate from './validate';
-import { isAdmin } from './helpers/middlewares';
-import { AdminRoles } from './helpers/types';
+import { isAdmin, isAdminOrStaff } from './helpers/middlewares';
+import { AdminRoles, StaffRoles } from './helpers/types';
 import payments from './controllers/payments';
 
 const router = Router();
@@ -24,7 +24,7 @@ router.get('/', (req, res) => {
 	return res.status(200).send('API Working');
 });
 
-router.post('/agent/register', validate('/register'), register);
+router.post('/staff/register', validate('staff-register'), register);
 router.post('/login', validate('/login'), preLogin);
 router.post('/update-password', validate('/update-password'), updatePassword);
 router.post('/reset-password', validate('/reset-password'), resetPassword);
@@ -44,11 +44,11 @@ router.get('/business/delete/:id', isAdmin([AdminRoles.CONTROL]), validate('id')
 router.post('/business/create', isAdmin([AdminRoles.CONTROL]), business.createBusiness);
 router.post('/business/update/:id', isAdmin([AdminRoles.CONTROL]), business.updateBusiness);
 
-router.get('/branch/:status?', branch.getBranches);
-router.get('/branch/get-details/:id', validate('id'), branch.getBranchDetails);
-router.get('/branch/delete/:id', validate('id'), branch.getBranchDetails);
-router.post('/branch/create', isAdmin([AdminRoles.CONTROL]), validate('branch'), branch.createBranch);
-router.post('/branch/update/:id', branch.updateBranch);
+router.get('/mda/:status?', mda.getMdas);
+router.get('/mda/get-details/:id', validate('id'), mda.getMdaDetails);
+router.delete('/mda/delete/:id', validate('id'), mda.deleteMda);
+router.post('/mda/create', isAdminOrStaff([AdminRoles.CONTROL], [StaffRoles.ADMIN]), validate('mda'), mda.createMda);
+router.post('/mda/update/:id', mda.updateMda);
 
 router.get('/category/:status?', category.getCategories);
 router.get('/category/get-details/:id', validate('id'), category.getCategoryDetails);

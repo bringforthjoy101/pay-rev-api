@@ -21,7 +21,7 @@ export type AuthPayloadDataType = {
 export type TokenDataType = {
 	type: 'token' | '2fa';
 	token: string;
-	agent?: AuthPayloadDataType;
+	staff?: AuthPayloadDataType;
 	admin?: AuthPayloadDataType;
 };
 
@@ -121,6 +121,10 @@ export type PrepareSmsDataType = {
 export enum AdminRoles {
 	CONTROL = 'control',
 	SUPPORT = 'support',
+}
+export enum StaffRoles {
+	FIELD = 'field',
+	ADMIN = 'admin',
 }
 
 export enum ModelStatus {

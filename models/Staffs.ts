@@ -5,8 +5,8 @@ USERS TABLE
 import { DataTypes } from 'sequelize';
 
 export default function (sequelize: any, Sequelize: any) {
-	var Agents = sequelize.define(
-		'agents',
+	var Staffs = sequelize.define(
+		'staffs',
 		{
 			id: {
 				type: Sequelize.UUID,
@@ -31,10 +31,13 @@ export default function (sequelize: any, Sequelize: any) {
 				allowNull: false,
 				unique: true,
 			},
-			role: Sequelize.ENUM('field', 'admin'),
+			role: {
+				type: Sequelize.ENUM('field', 'admin'),
+				defaultValue: 'admin',
+			},
 			status: {
 				type: Sequelize.ENUM('active', 'inactive'),
-				defaultValue: 'inactive',
+				defaultValue: 'active',
 			},
 			businessId: {
 				type: Sequelize.UUID,
@@ -44,14 +47,14 @@ export default function (sequelize: any, Sequelize: any) {
 					key: 'id',
 				},
 			},
-			branchId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'branches',
-					key: 'id',
-				},
-			},
+			// branchId: {
+			// 	type: Sequelize.UUID,
+			// 	allowNull: false,
+			// 	references: {
+			// 		model: 'branches',
+			// 		key: 'id',
+			// 	},
+			// },
 			verifiedAt: Sequelize.DATE,
 		},
 		{
@@ -59,11 +62,10 @@ export default function (sequelize: any, Sequelize: any) {
 		}
 	);
 
-	Agents.associate = function (models: any) {
-		models.agents.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-		models.agents.belongsTo(models.branches, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'branchId' });
-		models.agents.hasOne(models.agentSettings, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'agentId' });
+	Staffs.associate = function (models: any) {
+		models.staffs.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
+		models.staffs.hasOne(models.staffSettings, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
 	};
 
-	return Agents;
+	return Staffs;
 }

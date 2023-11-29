@@ -28,7 +28,7 @@ export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 			email,
 			password,
 			success: true,
-			message: 'OTP sent to agent',
+			message: 'OTP sent to staff',
 			otpId: otpInstance.id,
 		};
 
@@ -56,25 +56,26 @@ export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 
 export const login = async ({ email, password }: LoginDataType) => {
 	try {
-		const agent = await DB.agents.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staff = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
-		if (agent) {
-			const validPass: boolean = await bcrypt.compareSync(password, agent.password);
+		if (staff) {
+			const validPass: boolean = await bcrypt.compareSync(password, staff.password);
 			if (!validPass) return fnResponse({ status: false, message: 'Email or Password is incorrect!' });
 
-			if (agent.status === 'inactive') return fnResponse({ status: false, message: 'Account Suspended!, Please contact support!' });
+			if (staff.status === 'inactive') return fnResponse({ status: false, message: 'Account Suspended!, Please contact support!' });
 
 			// Create and assign token
 			let payload: AuthPayloadDataType = {
-				id: agent.id,
+				id: staff.id,
 				email,
-				names: agent.names,
-				phone: agent.phone,
-				status: agent.status,
-				type: 'agent',
+				names: staff.names,
+				phone: staff.phone,
+				status: staff.status,
+				role: staff.role,
+				type: 'staff',
 			};
 			const token: string = jwt.sign(payload, config.JWTSECRET);
-			const data: TokenDataType = { type: 'token', token, agent: payload };
+			const data: TokenDataType = { type: 'token', token, staff: payload };
 			return fnResponse({ status: true, message: 'Login successfull', data });
 		} else {
 			return fnResponse({ status: false, message: 'Incorrect Email' });
@@ -87,8 +88,8 @@ export const login = async ({ email, password }: LoginDataType) => {
 
 export const activateAccount = async (email: string) => {
 	try {
-		const agent = await DB.agents.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
-		agent.update({ status: 'active' });
+		const staff = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		staff.update({ status: 'active' });
 		return fnResponse({ status: true, message: 'User Activated' });
 	} catch (error) {
 		console.log(error);

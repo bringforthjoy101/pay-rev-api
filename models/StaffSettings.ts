@@ -5,8 +5,8 @@ AGENT SETTINGS TABLE
 import { DataTypes } from 'sequelize';
 
 export default function (sequelize: any, Sequelize: any) {
-	var AgentSettings = sequelize.define(
-		'agentSettings',
+	var StaffSettings = sequelize.define(
+		'staffSettings',
 		{
 			id: {
 				type: Sequelize.UUID,
@@ -24,9 +24,9 @@ export default function (sequelize: any, Sequelize: any) {
 		}
 	);
 
-	AgentSettings.associate = function (models: any) {
-		models.agentSettings.belongsTo(models.agents, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'agentId' });
+	StaffSettings.associate = function (models: any) {
+		models.staffSettings.belongsTo(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
 	};
 
-	return AgentSettings;
+	return StaffSettings;
 }

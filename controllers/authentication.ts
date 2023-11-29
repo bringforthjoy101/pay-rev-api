@@ -20,37 +20,35 @@ export const register = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { names, phone, email, password, businessId, branchId } = req.body;
+	const { names, phone, email, password, businessId } = req.body;
 
 	const business = await checkBusiness(businessId);
 	if (!business.status) return errorResponse(res, 'Business Not found');
-	const branch = await checkBranch(branchId);
-	if (!branch.status) return errorResponse(res, 'Branch Not found');
 
 	//Hash password
 	const salt: string = await bcrypt.genSalt(15);
 	const hashPassword: string = await bcrypt.hash(password, salt);
 
-	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId, branchId };
+	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId };
 
 	try {
-		const agentExists: any = await DB.agents.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staffExists: any = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
-		// if agent exists, stop the process and return a message
-		if (agentExists) return handleResponse(res, 400, false, `agent with email ${email} already exists`);
+		// if staff exists, stop the process and return a message
+		if (staffExists) return handleResponse(res, 400, false, `staff with email ${email} already exists`);
 
-		const agent: any = await DB.agents.create(insertData);
+		const staff: any = await DB.staffs.create(insertData);
 
-		if (agent) {
-			await DB.agentSettings.create({ agentId: agent.dataValues.id });
+		if (staff) {
+			await DB.staffSettings.create({ staffId: staff.dataValues.id });
 			// let payload: AuthPayloadDataType = {
-			// 	id: agent.id,
+			// 	id: staff.id,
 			// 	names,
 			// 	phone,
 			// 	email,
 			// };
 			// const token: string = jwt.sign(payload, config.JWTSECRET);
-			// const data: TokenDataType = { type: 'token', token, agent: payload };
+			// const data: TokenDataType = { type: 'token', token, staff: payload };
 			// await sendOtp({ email, type: typeEnum.VERIFICATION });
 			return handleResponse(res, 200, true, `Registration successfull`);
 		} else {
@@ -71,14 +69,15 @@ export const preLogin = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 
 	try {
-		const agent = await DB.agents.findOne({
+		const staff = await DB.staffs.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
-			include: { model: DB.agentSettings, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			include: { model: DB.staffSettings, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 		});
 
-		if (agent) {
-			if (agent.agentSetting.twoFa) {
+		if (staff) {
+			const TwoFaSettings = staff.staffSetting.dataValues.twoFa;
+			if (TwoFaSettings) {
 				const sendOtpResponse: FnResponseDataType = await sendOtp({ email, password, type: typeEnum.TWOFA });
 				if (!sendOtpResponse.status) return errorResponse(res, sendOtpResponse.message);
 				const data: TokenDataType = { type: '2fa', token: sendOtpResponse.data };
@@ -105,13 +104,13 @@ export const updatePassword = async (req: Request, res: Response) => {
 
 	const { email, oldPassword, newPassword } = req.body;
 	try {
-		const agent = await DB.agents.findOne({ where: { email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
-		if (!agent) return errorResponse(res, `agent not found!`);
-		const validPassword: boolean = await bcrypt.compareSync(oldPassword, agent.password);
+		const staff = await DB.staffs.findOne({ where: { email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		if (!staff) return errorResponse(res, `staff not found!`);
+		const validPassword: boolean = await bcrypt.compareSync(oldPassword, staff.password);
 		if (!validPassword) return errorResponse(res, `Incorrect  old password!`);
 		const salt: string = await bcrypt.genSalt(15);
 		const hashPassword: string = await bcrypt.hash(newPassword, salt);
-		const updatedPassword: any = await agent.update({ password: hashPassword });
+		const updatedPassword: any = await staff.update({ password: hashPassword });
 		if (!updatedPassword) return errorResponse(res, `Unable update password!`);
 		return successResponse(res, `Password updated successfully`);
 	} catch (error) {
@@ -129,12 +128,12 @@ export const resetPassword = async (req: Request, res: Response) => {
 	const { email } = req.body;
 
 	try {
-		const agent = await DB.agents.findOne({
+		const staff = await DB.staffs.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
 
-		if (agent) {
+		if (staff) {
 			const sendOtpResponse: FnResponseDataType = await sendOtp({ email, type: typeEnum.RESET });
 			if (!sendOtpResponse.status) return errorResponse(res, sendOtpResponse.message);
 			return successResponse(res, sendOtpResponse.message, sendOtpResponse.data);
@@ -158,11 +157,11 @@ export const changePassword = async (req: Request, res: Response) => {
 		const decoded: any = jwt.verify(token, config.JWTSECRET);
 		if (!decoded) return errorResponse(res, `Invalid verification`);
 
-		const agent = await DB.agents.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
-		if (!agent) return errorResponse(res, `Account Suspended!, Please contact support!`);
+		const staff = await DB.staffs.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		if (!staff) return errorResponse(res, `Account Suspended!, Please contact support!`);
 		const salt: string = await bcrypt.genSalt(15);
 		const hashPassword: string = await bcrypt.hash(password, salt);
-		const updatedPassword: any = await agent.update({ password: hashPassword });
+		const updatedPassword: any = await staff.update({ password: hashPassword });
 		if (!updatedPassword) return errorResponse(res, `Unable update password!`);
 		return successResponse(res, `Password changed successfully`);
 	} catch (error) {
@@ -218,11 +217,11 @@ export const updateUserSettings = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { twoFa } = req.body;
-	const { id } = req.agent;
+	const { id } = req.staff;
 
 	try {
-		const agent = await DB.agents.findOne({ where: { id } });
-		const updatedSettings: any = await agent.update({ twoFa });
+		const staff = await DB.staffs.findOne({ where: { id } });
+		const updatedSettings: any = await staff.update({ twoFa });
 		if (!updatedSettings) return errorResponse(res, `Unable update settings!`);
 		return successResponse(res, `Settings updated successfully`);
 	} catch (error) {

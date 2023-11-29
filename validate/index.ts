@@ -60,10 +60,19 @@ const validate = (method: string): any => {
 		case 'id': {
 			return [param('id').isInt().withMessage('ID must be a number!')];
 		}
-		case 'branch': {
+		case 'mda': {
 			return [
 				body('name').not().isEmpty().isString().withMessage('name is required!'),
 				body('address').not().isEmpty().isString().withMessage('address is required!'),
+				body('businessId').not().isEmpty().isString().withMessage('businessId is required!'),
+			];
+		}
+		case 'staff-register': {
+			return [
+				body('names').not().isEmpty().isString().withMessage('name is required!'),
+				body('email').not().isEmpty().isString().withMessage('Email is required!'),
+				body('password').not().isEmpty().isString().withMessage('Password is required!'),
+				body('phone').not().isEmpty().isString().withMessage('Phone is required!'),
 				body('businessId').not().isEmpty().isString().withMessage('businessId is required!'),
 			];
 		}
