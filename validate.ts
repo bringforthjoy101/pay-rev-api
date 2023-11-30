@@ -64,7 +64,6 @@ const validate = (method: string): any => {
 			return [
 				body('name').not().isEmpty().isString().withMessage('name is required!'),
 				body('address').not().isEmpty().isString().withMessage('address is required!'),
-				body('businessId').not().isEmpty().isString().withMessage('businessId is required!'),
 			];
 		}
 		case 'staff-register': {

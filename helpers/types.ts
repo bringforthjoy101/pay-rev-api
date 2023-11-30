@@ -16,6 +16,7 @@ export type AuthPayloadDataType = {
 	status: string;
 	role?: string;
 	type: string;
+	businessId?: string;
 };
 
 export type TokenDataType = {

@@ -15,8 +15,8 @@ const createMda = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-
-	const { name, businessId, address } = req.body;
+	const { businessId } = req.staff;
+	const { name, address } = req.body;
 
 	const insertData: BranchDataType = { name, businessId, address };
 

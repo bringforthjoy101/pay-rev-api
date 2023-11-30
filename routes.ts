@@ -9,7 +9,7 @@ import mda from './controllers/mdas';
 import category from './controllers/categories';
 import revenueHead from './controllers/revenueHeads';
 import validate from './validate';
-import { isAdmin, isAdminOrStaff } from './helpers/middlewares';
+import { isAdmin, isAdminOrStaff, isStaff } from './helpers/middlewares';
 import { AdminRoles, StaffRoles } from './helpers/types';
 import payments from './controllers/payments';
 
@@ -38,7 +38,7 @@ router.post('/admin/update-password', validate('/update-password'), admin.update
 router.post('/admin/reset-password', validate('/reset-password'), admin.resetPassword);
 router.post('/admin/change-password', validate('/change-password'), admin.changePassword);
 
-router.get('/business/:status?', isAdmin([AdminRoles.CONTROL]), business.getBusinesses);
+router.get('/business/:status?', isAdminOrStaff([AdminRoles.CONTROL], [StaffRoles.ADMIN]), business.getBusinesses);
 router.get('/business/get-details/:id', validate('id'), business.getBusinessDetails);
 router.get('/business/delete/:id', isAdmin([AdminRoles.CONTROL]), validate('id'), business.getBusinessDetails);
 router.post('/business/create', isAdmin([AdminRoles.CONTROL]), business.createBusiness);
@@ -47,7 +47,7 @@ router.post('/business/update/:id', isAdmin([AdminRoles.CONTROL]), business.upda
 router.get('/mda/:status?', mda.getMdas);
 router.get('/mda/get-details/:id', validate('id'), mda.getMdaDetails);
 router.delete('/mda/delete/:id', validate('id'), mda.deleteMda);
-router.post('/mda/create', isAdminOrStaff([AdminRoles.CONTROL], [StaffRoles.ADMIN]), validate('mda'), mda.createMda);
+router.post('/mda/create', isStaff([StaffRoles.ADMIN]), validate('mda'), mda.createMda);
 router.post('/mda/update/:id', mda.updateMda);
 
 router.get('/category/:status?', category.getCategories);

@@ -59,7 +59,7 @@ export const login = async ({ email, password }: LoginDataType) => {
 		const staff = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		if (staff) {
-			const validPass: boolean = await bcrypt.compareSync(password, staff.password);
+			const validPass: boolean = bcrypt.compareSync(password, staff.password);
 			if (!validPass) return fnResponse({ status: false, message: 'Email or Password is incorrect!' });
 
 			if (staff.status === 'inactive') return fnResponse({ status: false, message: 'Account Suspended!, Please contact support!' });
@@ -72,6 +72,7 @@ export const login = async ({ email, password }: LoginDataType) => {
 				phone: staff.phone,
 				status: staff.status,
 				role: staff.role,
+				businessId: staff.businessId,
 				type: 'staff',
 			};
 			const token: string = jwt.sign(payload, config.JWTSECRET);

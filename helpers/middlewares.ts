@@ -45,6 +45,14 @@ export const isAdmin = (roles: string[]) => {
 	};
 };
 
+export const isStaff = (roles: string[]) => {
+	return (req: Request, res: Response, next: NextFunction) => {
+		if (!req.staff) return handleResponse(res, 401, false, `Unauthorized access`);
+		if (!roles.includes(req.staff.role)) return handleResponse(res, 401, false, `Permission denied`);
+		next();
+	};
+};
+
 export const isAdminOrStaff = (adminRoles: string[], staffRoles: string[]) => {
 	return (req: Request, res: Response, next: NextFunction) => {
 		if (!req.admin && !req.staff) return handleResponse(res, 401, false, `Unauthorized access`);
