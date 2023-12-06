@@ -50,7 +50,7 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 		const { page = 1, pageSize = '10' } = req.query;
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const revenueHeads = await DB.revenueHeads.findAll({
+		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -58,7 +58,15 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 		});
 
 		if (!revenueHeads.length) return successResponse(res, `No address available!`, []);
-		return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrived!`, revenueHeads);
+		if (revenueHeads) {
+			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
+			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrived!`, {
+				totalPages,
+				currentPage: parseInt(page as string, 10),
+				data: revenueHeads,
+			});
+		}
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occured - ${error}`);

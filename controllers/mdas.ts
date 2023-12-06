@@ -47,7 +47,7 @@ const getMdas = async (req: Request, res: Response) => {
 		const { page = 1, pageSize = '10' } = req.query;
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const mdas = await DB.mdas.findAll({
+		const { count, rows: mdas } = await DB.mdas.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -55,7 +55,15 @@ const getMdas = async (req: Request, res: Response) => {
 		});
 
 		if (!mdas.length) return successResponse(res, `No address available!`, []);
-		return successResponse(res, `${mdas.length} mda${mdas.length > 1 ? 'es' : ''} retrived!`, mdas);
+		if (mdas) {
+			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
+			return successResponse(res, `${mdas.length} mda${mdas.length > 1 ? 'es' : ''} retrived!`, {
+				totalPages,
+				currentPage: parseInt(page as string, 10),
+				data: mdas,
+			});
+		}
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occured - ${error}`);
