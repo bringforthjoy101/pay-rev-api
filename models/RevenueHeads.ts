@@ -25,14 +25,6 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.ENUM('active', 'inactive'),
 				defaultValue: 'inactive',
 			},
-			businessId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'businesses',
-					key: 'id',
-				},
-			},
 			mdaId: {
 				type: Sequelize.UUID,
 				allowNull: false,
@@ -48,7 +40,6 @@ export default function (sequelize: any, Sequelize: any) {
 	);
 
 	RevenueHeads.associate = function (models: any) {
-		models.revenueHeads.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 		models.revenueHeads.belongsTo(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'mdaId' });
 	};
 

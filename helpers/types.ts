@@ -168,9 +168,7 @@ export type CategoryDataType = {
 export type RevenueHeadDataType = {
 	name: string;
 	amount: number;
-	categoryId?: number;
-	branchId: number;
-	businessId: number;
+	mdaId?: number;
 	status?: ModelStatus;
 };
 

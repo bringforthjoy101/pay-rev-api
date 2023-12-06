@@ -16,13 +16,13 @@ const createRevenueHead = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { name, amount, branchId, businessId } = req.body;
+	const { name, amount, mdaId } = req.body;
 
-	const insertData: RevenueHeadDataType = { name, amount, branchId, businessId };
+	const insertData: RevenueHeadDataType = { name, amount, mdaId };
 
 	try {
 		const revenueHeadExists: any = await DB.revenueHeads.findOne({
-			where: { name, amount, businessId },
+			where: { name, amount },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
 
@@ -80,15 +80,13 @@ const updateRevenueHead = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { id } = req.params;
-	const { name, amount, branchId, businessId, status } = req.body;
+	const { name, amount, status } = req.body;
 	try {
 		const revenueHead = await DB.revenueHeads.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!revenueHead) return errorResponse(res, `revenueHead not found!`);
 		const updateData: RevenueHeadDataType = {
 			name: name || revenueHead.name,
 			amount: amount || revenueHead.amount,
-			branchId: branchId || revenueHead.branchId,
-			businessId: businessId || revenueHead.businessId,
 			status: status || revenueHead.status,
 		};
 		const updatedRevenueHead: any = await revenueHead.update(updateData);

@@ -77,13 +77,14 @@ const updateMda = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { id } = req.params;
-	const { name, status } = req.body;
+	const { name, status, address } = req.body;
 	try {
 		const mda = await DB.mdas.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!mda) return errorResponse(res, `mda not found!`);
 		const updateData = {
 			name: name || mda.name,
 			status: status || mda.status,
+			address: address || mda.address,
 		};
 		const updatedMda: any = await mda.update(updateData);
 		if (!updatedMda) return errorResponse(res, `Unable to update mda!`);

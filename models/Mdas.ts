@@ -40,7 +40,6 @@ export default function (sequelize: any, Sequelize: any) {
 	);
 
 	Mdas.associate = function (models: any) {
-		// models.branches.hasMany(models.agents, { onDelete: 'cascade', foreignKey: 'branchId' });
 		models.mdas.hasMany(models.revenueHeads, { onDelete: 'cascade', foreignKey: 'mdaId' });
 		models.mdas.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 	};
