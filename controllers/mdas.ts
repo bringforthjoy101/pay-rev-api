@@ -43,7 +43,16 @@ const getMdas = async (req: Request, res: Response) => {
 		if (!req.params) {
 			where.status = 'active';
 		}
-		const mdas = await DB.mdas.findAll({ where, order: [['id', 'DESC']] });
+
+		const { page = 1, pageSize = '10' } = req.query;
+		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
+
+		const mdas = await DB.mdas.findAll({
+			where,
+			order: [['id', 'DESC']],
+			limit: parseInt(pageSize as string, 10),
+			offset: offset,
+		});
 
 		if (!mdas.length) return successResponse(res, `No address available!`, []);
 		return successResponse(res, `${mdas.length} mda${mdas.length > 1 ? 'es' : ''} retrived!`, mdas);
