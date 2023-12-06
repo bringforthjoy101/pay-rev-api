@@ -56,11 +56,11 @@ router.get('/category/delete/:id', validate('id'), category.getCategoryDetails);
 router.post('/category/create', category.createCategory);
 router.post('/category/update/:id', category.updateCategory);
 
-router.get('/revenue/:status?', revenueHead.getRevenueHeads);
-router.get('/revenue/get-details/:id', validate('id'), revenueHead.getRevenueHeadDetails);
-router.get('/revenue/:id', validate('id'), revenueHead.getRevenueHeadDetails);
-router.post('/revenue', isAuthorized, validate('create-revenue-heads'), revenueHead.createRevenueHead);
-router.put('/revenue/:id', revenueHead.updateRevenueHead);
+router.get('/revenue-head/:status?', revenueHead.getRevenueHeads);
+router.get('/revenue-head/get-details/:id', validate('id'), revenueHead.getRevenueHeadDetails);
+router.get('/revenue-head/:id', validate('id'), revenueHead.getRevenueHeadDetails);
+router.post('/revenue-head', isAuthorized, validate('create-revenue-heads'), revenueHead.createRevenueHead);
+router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 
 router.post('/payment/log', payments.logPayment);
 router.get('/payments', payments.getPaymentLogs);
