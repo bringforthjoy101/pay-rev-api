@@ -59,6 +59,7 @@ router.post('/category/update/:id', category.updateCategory);
 router.get('/revenue-head/:status?', revenueHead.getRevenueHeads);
 router.get('/revenue-head/get-details/:id', validate('id'), revenueHead.getRevenueHeadDetails);
 router.get('/revenue-head/:id', validate('id'), revenueHead.getRevenueHeadDetails);
+router.get('/revenue-head/mda/:id', validate('id'), revenueHead.getRevenueHeadByMda);
 router.post('/revenue-head', isAuthorized, validate('create-revenue-heads'), revenueHead.createRevenueHead);
 router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 
