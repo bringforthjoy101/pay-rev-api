@@ -23,8 +23,7 @@ API CALL START
 router.get('/', (req, res) => {
 	return res.status(200).send('API Working');
 });
-
-router.get('/test', (req, res) => {
+router.put('/', (req, res) => {
 	return res.status(200).send('API Working');
 });
 
@@ -65,7 +64,7 @@ router.get('/revenue-head/get-details/:id', validate('id'), revenueHead.getReven
 router.get('/revenue-head/:id', validate('id'), revenueHead.getRevenueHeadDetails);
 router.get('/revenue-head/mda/:id', validate('id'), revenueHead.getRevenueHeadByMda);
 router.post('/revenue-head', isAuthorized, validate('create-revenue-heads'), revenueHead.createRevenueHead);
-router.put('/revenue-head/:id', revenueHead.updateRevenueHead);
+router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 
 router.post('/payment/log', payments.logPayment);
 router.get('/payments', payments.getPaymentLogs);
