@@ -23,9 +23,6 @@ API CALL START
 router.get('/', (req, res) => {
 	return res.status(200).send('API Working');
 });
-router.put('/', (req, res) => {
-	return res.status(200).send('API Working');
-});
 
 router.post('/staff/register', validate('staff-register'), register);
 router.post('/login', validate('/login'), preLogin);
