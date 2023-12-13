@@ -24,6 +24,10 @@ router.get('/', (req, res) => {
 	return res.status(200).send('API Working');
 });
 
+router.get('/test', (req, res) => {
+	return res.status(200).send('API Working');
+});
+
 router.post('/staff/register', validate('staff-register'), register);
 router.post('/login', validate('/login'), preLogin);
 router.post('/update-password', validate('/update-password'), updatePassword);
