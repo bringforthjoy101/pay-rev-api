@@ -92,6 +92,12 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
 			offset: offset,
+			include: [
+				{
+					model: DB.mdas,
+					attributes: ['name', 'address'],
+				},
+			],
 		});
 
 		if (!revenueHeads.length) return successResponse(res, `No revenuew head available!`, []);
@@ -100,6 +106,7 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 
 			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrived!`, {
 				totalPages,
+				count,
 				currentPage: parseInt(page as string, 10),
 				data: revenueHeads,
 			});
