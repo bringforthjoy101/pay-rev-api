@@ -85,7 +85,6 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
 		const mda = await DB.mdas.findOne({ where: { id }, attributes: ['name', 'address'] });
-		console.log('🚀 ~ file: revenueHeads.ts:88 ~ getRevenueHeadByMda ~ mda:', mda);
 
 		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({
 			where: {
