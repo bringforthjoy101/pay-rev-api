@@ -84,6 +84,9 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 		const { page = 1, pageSize = '10' } = req.query;
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
+		const mda = await DB.mdas.findOne({ where: { id }, attributes: ['name', 'address'] });
+		console.log('🚀 ~ file: revenueHeads.ts:88 ~ getRevenueHeadByMda ~ mda:', mda);
+
 		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({
 			where: {
 				...where,
@@ -92,15 +95,9 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
 			offset: offset,
-			include: [
-				{
-					model: DB.mdas,
-					attributes: ['name', 'address'],
-				},
-			],
 		});
 
-		if (!revenueHeads.length) return successResponse(res, `No revenuew head available!`, []);
+		if (!revenueHeads.length) return successResponse(res, `No revenue head available!`, []);
 		if (revenueHeads) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
@@ -108,7 +105,7 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 				totalPages,
 				count,
 				currentPage: parseInt(page as string, 10),
-				data: revenueHeads,
+				data: { ...mda.dataValues, ...revenueHeads },
 			});
 		}
 	} catch (error) {
