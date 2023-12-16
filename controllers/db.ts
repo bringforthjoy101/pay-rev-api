@@ -35,7 +35,7 @@ Object.keys(db).forEach(function (modelName) {
 //Sync Database
 sequelize
 	.sync({
-		alter: true,
+		// alter: true,
 	})
 	.then(async function () {})
 	.catch(function (err: any) {

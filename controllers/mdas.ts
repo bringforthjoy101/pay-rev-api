@@ -8,6 +8,7 @@ import DB from './db';
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { BranchDataType, IdsDataType } from '../helpers/types';
+import { Op } from 'sequelize';
 
 // create mda
 const createMda = async (req: Request, res: Response) => {
@@ -39,12 +40,18 @@ const createMda = async (req: Request, res: Response) => {
 // get all mdas
 const getMdas = async (req: Request, res: Response) => {
 	try {
+		const { page = 1, pageSize = '10', searchByName } = req.query;
+
 		const where: any = {};
 		if (!req.params) {
 			where.status = 'active';
 		}
 
-		const { page = 1, pageSize = '10' } = req.query;
+		if (searchByName)
+			where.name = {
+				[Op.like]: `%${searchByName}%`,
+			};
+
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
 		const { count, rows: mdas } = await DB.mdas.findAndCountAll({
