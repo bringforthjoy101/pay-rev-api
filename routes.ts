@@ -38,7 +38,7 @@ router.post('/admin/update-password', validate('/update-password'), admin.update
 router.post('/admin/reset-password', validate('/reset-password'), admin.resetPassword);
 router.post('/admin/change-password', validate('/change-password'), admin.changePassword);
 
-router.get('/business/:status?', isAdminOrStaff([AdminRoles.CONTROL], [StaffRoles.ADMIN]), business.getBusinesses);
+router.get('/business/:status?', isAuthorized, business.getBusinesses);
 router.get('/business/get-details/:id', validate('id'), business.getBusinessDetails);
 router.get('/business/delete/:id', isAdmin([AdminRoles.CONTROL]), validate('id'), business.getBusinessDetails);
 router.post('/business/create', isAdmin([AdminRoles.CONTROL]), business.createBusiness);

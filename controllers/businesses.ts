@@ -8,6 +8,7 @@ import DB from './db';
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { BusinessDataType, IdsDataType } from '../helpers/types';
+import { Op } from 'sequelize';
 
 // create business
 const createBusiness = async (req: Request, res: Response) => {
@@ -40,14 +41,37 @@ const createBusiness = async (req: Request, res: Response) => {
 // get all businesses
 const getBusinesses = async (req: Request, res: Response) => {
 	try {
+		const { page = 1, pageSize = '10', searchByName } = req.query;
+
 		const where: any = {};
 		if (!req.params) {
 			where.status = 'active';
 		}
-		const businesses = await DB.businesses.findAll({ where, order: [['id', 'DESC']] });
 
-		if (!businesses.length) return successResponse(res, `No address available!`, []);
-		return successResponse(res, `${businesses.length} business${businesses.length > 1 ? 'es' : ''} retrived!`, businesses);
+		if (searchByName)
+			where.name = {
+				[Op.like]: `%${searchByName}%`,
+			};
+
+		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
+
+		const { count, rows: businesses } = await DB.businesses.findAndCountAll({
+			where,
+			order: [['id', 'DESC']],
+			limit: parseInt(pageSize as string, 10),
+			offset: offset,
+		});
+
+		if (!businesses.length) return successResponse(res, `No business available!`, []);
+		if (businesses) {
+			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
+			return successResponse(res, `${businesses.length} business${businesses.length > 1 ? 'es' : ''} retrived!`, {
+				totalPages,
+				currentPage: parseInt(page as string, 10),
+				data: businesses,
+			});
+		}
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occured - ${error}`);
