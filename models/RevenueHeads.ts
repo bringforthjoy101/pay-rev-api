@@ -21,7 +21,7 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.DOUBLE,
 				defaultValue: 0.0,
 			},
-			amountEdittable: {
+			amountEditable: {
 				type: Sequelize.BOOLEAN,
 				defaultValue: false,
 			},
