@@ -172,6 +172,50 @@ const deleteMultipleMdas = async (req: Request, res: Response) => {
 	}
 };
 
+const getMdaByBusiness = async (req: Request, res: Response) => {
+	try {
+		const where: any = {};
+		if (!req.params) {
+			where.status = 'active';
+		}
+		const { id } = req.params;
+
+		const { page = 1, pageSize = '10' } = req.query;
+		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
+
+		const business = await DB.businesses.findOne({ where: { id } });
+		if (!business) throw new Error('Business not found!');
+
+		const { count, rows: mdas } = await DB.mdas.findAndCountAll({
+			where: {
+				...where,
+				businessId: id,
+			},
+			order: [['id', 'DESC']],
+			limit: parseInt(pageSize as string, 10),
+			offset: offset,
+		});
+
+		if (!mdas.length) return successResponse(res, `No mda in this business available!`, []);
+		if (mdas) {
+			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
+			return successResponse(res, `${mdas.length} mda${mdas.length > 1 ? 's' : ''} retrieved!`, {
+				totalPages,
+				count,
+				currentPage: parseInt(page as string, 10),
+				data: [
+					// ...business.dataValues,
+					...mdas,
+				],
+			});
+		}
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+	}
+};
+
 export default {
 	createMda,
 	getMdas,
@@ -179,4 +223,5 @@ export default {
 	updateMda,
 	deleteMda,
 	deleteMultipleMdas,
+	getMdaByBusiness,
 };

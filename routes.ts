@@ -38,13 +38,14 @@ router.post('/admin/update-password', validate('/update-password'), admin.update
 router.post('/admin/reset-password', validate('/reset-password'), admin.resetPassword);
 router.post('/admin/change-password', validate('/change-password'), admin.changePassword);
 
-router.get('/business/:status?', isAuthorized, business.getBusinesses);
+router.get('/business/:status?', business.getBusinesses);
 router.get('/business/get-details/:id', validate('id'), business.getBusinessDetails);
 router.get('/business/delete/:id', isAdmin([AdminRoles.CONTROL]), validate('id'), business.getBusinessDetails);
 router.post('/business/create', isAdmin([AdminRoles.CONTROL]), business.createBusiness);
 router.post('/business/update/:id', isAdmin([AdminRoles.CONTROL]), business.updateBusiness);
 
 router.get('/mda/:status?', mda.getMdas);
+router.get('/mda/business/:id', mda.getMdaByBusiness);
 router.get('/mda/get-details/:id', validate('id'), mda.getMdaDetails);
 router.delete('/mda/:id', validate('id'), mda.deleteMda);
 router.post('/mda', isStaff([StaffRoles.ADMIN]), validate('mda'), mda.createMda);

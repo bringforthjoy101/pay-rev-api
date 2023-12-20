@@ -58,7 +58,7 @@ const validate = (method: string): any => {
 			];
 		}
 		case 'id': {
-			return [param('id').isInt().withMessage('ID must be a number!')];
+			return [param('id').isUUID(4).withMessage('ID must be a valid UUID!')];
 		}
 		case 'mda': {
 			return [
