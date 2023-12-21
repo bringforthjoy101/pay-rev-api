@@ -96,7 +96,7 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 			offset: offset,
 		});
 
-		if (!revenueHeads.length) return successResponse(res, `No revenue head available!`, []);
+		if (!revenueHeads.length) return successResponse(res, `No revenue head available!`, mda.dataValues);
 		if (revenueHeads) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
