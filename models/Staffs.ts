@@ -20,7 +20,6 @@ export default function (sequelize: any, Sequelize: any) {
 			email: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			password: {
 				type: Sequelize.STRING,
@@ -29,7 +28,6 @@ export default function (sequelize: any, Sequelize: any) {
 			phone: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			role: {
 				type: Sequelize.ENUM('field', 'admin'),
@@ -59,6 +57,10 @@ export default function (sequelize: any, Sequelize: any) {
 		},
 		{
 			freezeTableName: true,
+			indexes: [
+				{ unique: true, fields: ['email'] },
+				{ unique: true, fields: ['phone'] },
+			],
 		}
 	);
 
