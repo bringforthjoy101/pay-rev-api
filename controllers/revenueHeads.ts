@@ -104,7 +104,8 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 				totalPages,
 				count,
 				currentPage: parseInt(page as string, 10),
-				data: { ...mda.dataValues, ...revenueHeads },
+				mda: mda.dataValues,
+				data: revenueHeads,
 			});
 		}
 	} catch (error) {
