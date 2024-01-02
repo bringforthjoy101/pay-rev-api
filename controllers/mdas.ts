@@ -7,7 +7,7 @@ import DB from './db';
 
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
-import { BranchDataType, IdsDataType } from '../helpers/types';
+import { MdaDataType, IdsDataType } from '../helpers/types';
 import { Op } from 'sequelize';
 
 // create mda
@@ -24,7 +24,7 @@ const createMda = async (req: Request, res: Response) => {
 
 		if (business) return errorResponse(res, `no business`);
 
-		const insertData: BranchDataType = {
+		const insertData: MdaDataType = {
 			name,
 			businessId,
 			address,

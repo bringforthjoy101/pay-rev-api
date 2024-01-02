@@ -152,7 +152,7 @@ export type IdsDataType = {
 	ids: string[];
 };
 
-export type BranchDataType = {
+export type MdaDataType = {
 	name: string;
 	address: string;
 	businessId: number;
