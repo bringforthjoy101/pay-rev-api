@@ -17,14 +17,23 @@ const createMda = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { businessId } = req.staff;
-	const { name, address } = req.body;
-
-	const insertData: BranchDataType = { name, businessId, address };
+	const { name, address, secretKey, privateKey } = req.body;
 
 	try {
+		const business = await DB.businesses.findOne({ where: { id: businessId } });
+
+		if (business) return errorResponse(res, `no business`);
+
+		const insertData: BranchDataType = {
+			name,
+			businessId,
+			address,
+			secretKey: secretKey || business.secretKey,
+			privateKey: privateKey || business.privateKey,
+		};
+
 		const branchExists: any = await DB.mdas.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
-		// if mda exists, stop the process and return a message
 		if (branchExists) return errorResponse(res, `mda with name ${name} already exists`);
 
 		const mda: any = await DB.mdas.create(insertData);

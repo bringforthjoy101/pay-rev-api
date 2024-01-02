@@ -156,6 +156,8 @@ export type BranchDataType = {
 	name: string;
 	address: string;
 	businessId: number;
+	secretKey: string;
+	privateKey: string;
 	status?: ModelStatus;
 };
 
