@@ -31,7 +31,7 @@ export default function (sequelize: any, Sequelize: any) {
 			},
 			email: { type: Sequelize.STRING },
 			phone: { type: Sequelize.STRING },
-			privateKey: { type: Sequelize.STRING },
+			publicKey: { type: Sequelize.STRING },
 			secretKey: { type: Sequelize.STRING },
 			status: {
 				type: Sequelize.ENUM('active', 'inactive'),

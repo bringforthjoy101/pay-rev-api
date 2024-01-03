@@ -157,7 +157,7 @@ export type MdaDataType = {
 	address: string;
 	businessId: number;
 	secretKey: string;
-	privateKey: string;
+	publicKey: string;
 	status?: ModelStatus;
 };
 

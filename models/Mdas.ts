@@ -25,7 +25,7 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.ENUM('active', 'inactive'),
 				defaultValue: 'inactive',
 			},
-			privateKey: { type: Sequelize.STRING },
+			publicKey: { type: Sequelize.STRING },
 			secretKey: { type: Sequelize.STRING },
 			businessId: {
 				type: Sequelize.UUID,

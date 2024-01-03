@@ -17,7 +17,7 @@ const createMda = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { businessId } = req.staff;
-	const { name, address, secretKey, privateKey } = req.body;
+	const { name, address, secretKey, publicKey } = req.body;
 
 	try {
 		const business = await DB.businesses.findOne({ where: { id: businessId } });
@@ -29,7 +29,7 @@ const createMda = async (req: Request, res: Response) => {
 			businessId,
 			address,
 			secretKey: secretKey || business.secretKey,
-			privateKey: privateKey || business.privateKey,
+			publicKey: publicKey || business.publicKey,
 		};
 
 		const branchExists: any = await DB.mdas.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
