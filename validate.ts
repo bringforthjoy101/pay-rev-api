@@ -82,6 +82,7 @@ const validate = (method: string): any => {
 				body('name').not().isEmpty().isString().withMessage('name is required!'),
 				body('amount').not().isEmpty().isCurrency().withMessage('amount is required!'),
 				body('mdaId').not().isEmpty().isString().withMessage('mdaId is required!'),
+				body('amountEditable').optional().isBoolean(),
 			];
 		}
 		case 'log-payment': {

@@ -16,9 +16,9 @@ const createRevenueHead = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { name, amount, mdaId } = req.body;
+	const { name, amount, mdaId, amountEditable } = req.body;
 
-	const insertData: RevenueHeadDataType = { name, amount, mdaId };
+	const insertData: RevenueHeadDataType = { name, amount, mdaId, amountEditable };
 
 	try {
 		const revenueHeadExists: any = await DB.revenueHeads.findOne({

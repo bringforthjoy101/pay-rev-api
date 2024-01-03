@@ -172,6 +172,7 @@ export type RevenueHeadDataType = {
 	amount: number;
 	mdaId?: number;
 	status?: ModelStatus;
+	amountEditable?: boolean;
 };
 
 export type PaymentLogDataType = {
