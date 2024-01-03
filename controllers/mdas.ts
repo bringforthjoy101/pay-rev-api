@@ -17,13 +17,12 @@ const createMda = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	const { businessId } = req.staff;
-	console.log('🚀 ~ file: mdas.ts:20 ~ createMda ~ businessId:', businessId);
 	const { name, address, secretKey, privateKey } = req.body;
 
 	try {
 		const business = await DB.businesses.findOne({ where: { id: businessId } });
 
-		if (business) return errorResponse(res, `no business`);
+		if (!business) return errorResponse(res, `no business`);
 
 		const insertData: MdaDataType = {
 			name,
