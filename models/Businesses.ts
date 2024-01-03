@@ -40,6 +40,14 @@ export default function (sequelize: any, Sequelize: any) {
 		},
 		{
 			freezeTableName: true,
+			defaultScope: {
+				attributes: { exclude: ['secretKey'] },
+			},
+			scopes: {
+				withSecretKey: {
+					attributes: { include: ['secretKey'] },
+				},
+			},
 		}
 	);
 
