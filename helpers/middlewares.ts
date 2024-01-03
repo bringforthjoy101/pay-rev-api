@@ -71,20 +71,33 @@ export const checkBusiness = async (id: number) => {
 	}
 };
 
-export const checkBranch = async (id: number) => {
+export const checkMda = async (id: string) => {
 	try {
-		const branch = await DB.branches.findByPk(id);
-		if (!branch) return fnResponse({ status: false, message: 'Branch not found', data: null });
-		return fnResponse({ status: true, message: 'Branch Found', data: branch });
+		const mda = await DB.mdas.findByPk(id);
+		console.log('🚀 ~ file: middlewares.ts:77 ~ checkMda ~ mda:', mda);
+		if (!mda) return fnResponse({ status: false, message: 'mda not found', data: null });
+		return fnResponse({ status: true, message: 'mda Found', data: mda });
 	} catch (error) {
 		console.log(error);
 		return { status: false, message: 'An error occured', data: error };
 	}
 };
 
-export const checkRevenueHead = async (id: number) => {
+export const checkRevenueHead = async (id: string) => {
 	try {
-		const revenue = await DB.revenueHeads.findByPk(id);
+		const revenue = await DB.revenueHeads.findByPk(id, {
+			include: [
+				{
+					model: DB.mdas,
+					include: [
+						{
+							model: DB.businesses,
+						},
+					],
+				},
+			],
+		});
+
 		if (!revenue) return fnResponse({ status: false, message: 'Revenue Head not found', data: null });
 		return fnResponse({ status: true, message: 'Revenue Head Found', data: revenue });
 	} catch (error) {

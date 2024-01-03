@@ -84,6 +84,16 @@ const validate = (method: string): any => {
 				body('mdaId').not().isEmpty().isString().withMessage('mdaId is required!'),
 			];
 		}
+		case 'log-payment': {
+			return [
+				body('payeeName').not().isEmpty().isString().withMessage('payeeName is required!'),
+				body('payeePhone').not().isEmpty().isString().withMessage('payeePhone is required!'),
+				body('payeeEmail').not().isEmpty().isString().withMessage('payeeEmail is required!'),
+				body('tnxRef').not().isEmpty().isString().withMessage('tnxRef is required!'),
+				body('amount').not().isEmpty().isCurrency().withMessage('amount is required!'),
+				body('revenueHeadId').not().isEmpty().isUUID().withMessage('revenueHeadId is required!'),
+			];
+		}
 	}
 };
 

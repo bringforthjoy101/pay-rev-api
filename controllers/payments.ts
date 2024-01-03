@@ -2,17 +2,14 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-// Import db
-import DB from './db';
-
 // Import function files
 import { handleResponse, successResponse, errorResponse, randId } from '../helpers/utility';
-import { PaymentLogDataType, IdsDataType, payEnum } from '../helpers/types';
-import { checkBranch, checkBusiness, checkRevenueHead } from '../helpers/middlewares';
-import { postPayment } from '../helpers/payment';
+import { PaymentLogDataType, payEnum } from '../helpers/types';
+import { checkRevenueHead } from '../helpers/middlewares';
 import { prepareMail } from '../helpers/mailer/mailer';
 import { paymentNotifTemplateData } from '../helpers/mailer/templateData';
 import { paymentNotifTemplate } from '../helpers/mailer/template';
+import DB from './db';
 
 // log payment
 const logPayment = async (req: Request, res: Response) => {
@@ -21,38 +18,41 @@ const logPayment = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { payeeName, payeePhone, payeeEmail, amount, businessId, branchId, revenueHeadId } = req.body;
-	const business = await checkBusiness(businessId);
-	if (!business.status) return errorResponse(res, 'Business Not found');
-	const branch = await checkBranch(branchId);
-	if (!branch.status) return errorResponse(res, 'Branch Not found');
+	const { payeeName, payeePhone, payeeEmail, tnxRef, amount, revenueHeadId } = req.body;
+
 	const revenueHead = await checkRevenueHead(revenueHeadId);
 	if (!revenueHead.status) return errorResponse(res, 'Revenue Head Not found');
+
+	const { mda } = revenueHead.data.dataValues;
+	const { business } = mda.dataValues;
+
+	console.log('🚀 ~ file: payments.ts:40 ~ logPayment ~ insertData:', req?.staff?.id);
 
 	const insertData: PaymentLogDataType = {
 		payeeName,
 		payeePhone,
 		payeeEmail,
-		transRef: randId(),
+		transRef: tnxRef,
 		amount: revenueHead.data.amount ? revenueHead.data.amount : amount,
-		businessId,
-		branchId,
+		businessId: business.dataValues.id,
+		mdaId: mda.dataValues.id,
 		revenueHeadId,
-		agentId: req.staff.id,
+		staffId: req.staff.id,
 	};
 	try {
 		const logPayment: any = await DB.paymentReports.create(insertData);
+		console.log('🚀 ~ file: payments.ts:44 ~ logPayment ~ logPayment:', logPayment);
 		if (logPayment) {
-			const postData = {
-				ReferenceNumber: insertData.transRef,
-				ServiceNumber: insertData.payeePhone,
-				Description: '',
-				Amount: insertData.amount,
-				FirstName: insertData.payeeName.split(' ')[0],
-				LastName: insertData.payeeName.split(' ')[1],
-				Email: insertData.payeeEmail,
-				ItemCode: 1,
-			};
+			// const postData = {
+			// 	ReferenceNumber: insertData.transRef,
+			// 	ServiceNumber: insertData.payeePhone,
+			// 	Description: '',
+			// 	Amount: insertData.amount,
+			// 	FirstName: insertData.payeeName.split(' ')[0],
+			// 	LastName: insertData.payeeName.split(' ')[1],
+			// 	Email: insertData.payeeEmail,
+			// 	ItemCode: 1,
+			// };
 
 			// await postPayment(postData);
 
@@ -62,7 +62,7 @@ const logPayment = async (req: Request, res: Response) => {
 					phone: payeePhone,
 					amount: insertData.amount,
 					date: logPayment.createdAt,
-					business: { name: business.data.name, branch: branch.data.name, revenue: revenueHead.data.name },
+					business: { name: business.dataValues.name, mda: mda.dataValues.name, revenue: revenueHead.data.name },
 				},
 			});
 
@@ -80,13 +80,13 @@ const logPayment = async (req: Request, res: Response) => {
 					phone: payeePhone,
 					amount: insertData.amount,
 					date: logPayment.createdAt,
-					business: { name: business.data.name, branch: branch.data.name, revenue: revenueHead.data.name },
+					business: { name: business.dataValues.name, mda: mda.dataValues.name, revenue: revenueHead.data.name },
 				},
 			});
 
 			// prepare and send mail for business
 			const _sendEmail = await prepareMail({
-				mailRecipients: business.data.email,
+				mailRecipients: business.dataValues.email,
 				mailSubject,
 				mailBody: paymentNotifTemplate({ subject: _mailSubject, body: _mailBody }),
 			});
@@ -112,26 +112,27 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			where,
 			include: [
 				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-				{ model: DB.branches, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-				{ model: DB.agents, as: 'agent', attributes: { exclude: ['createdAt', 'updatedAt', 'password'] } },
+				{ model: DB.staffs, as: 'staff', attributes: { exclude: ['createdAt', 'updatedAt', 'password'] } },
 			],
 			order: [['id', 'DESC']],
 		});
+		console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
 		if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
 		return successResponse(
 			res,
 			`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
 			paymentLogs.map((log: any) => {
-				const { id, createdAt, payeeName, transRef, branch, revenueHead, amount, respDescription, agent } = log;
+				const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
 				return {
 					id,
 					payeeName,
 					transRef,
 					description: respDescription,
-					agencyName: branch.name,
-					revenueHead: revenueHead.name,
-					agent: agent.name,
+					agencyName: mdas,
+					revenueHead: revenueHead,
+					staff: staff,
 					amount,
 					status: 'pending',
 					createdAt,

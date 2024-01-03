@@ -181,7 +181,7 @@ export type PaymentLogDataType = {
 	amount: number;
 	transRef: string;
 	businessId: number;
-	branchId: number;
+	mdaId: number;
 	revenueHeadId: number;
-	agentId: number;
+	staffId: number;
 };

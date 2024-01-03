@@ -12,7 +12,7 @@ import DB from './db';
 import { handleResponse, successResponse, errorResponse, otpValidity } from '../helpers/utility';
 import { RegisterDataType, TokenDataType, typeEnum, VerifyOtpDataType, FnResponseDataType, ChangePasswordDataType } from '../helpers/types';
 import { activateAccount, login, sendOtp } from '../helpers/auth';
-import { checkBranch, checkBusiness } from '../helpers/middlewares';
+import { checkBusiness } from '../helpers/middlewares';
 
 export const register = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
