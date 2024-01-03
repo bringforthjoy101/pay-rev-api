@@ -48,7 +48,7 @@ router.get('/mda/:status?', mda.getMdas);
 router.get('/mda/business/:id', mda.getMdaByBusiness);
 router.get('/mda/get-details/:id', validate('id'), mda.getMdaDetails);
 router.delete('/mda/:id', validate('id'), mda.deleteMda);
-router.post('/mda', isStaff([StaffRoles.ADMIN]), validate('mda'), mda.createMda);
+router.post('/mda', isAuthorized, validate('mda'), mda.createMda);
 router.put('/mda/:id', isAuthorized, mda.updateMda);
 
 router.get('/category/:status?', category.getCategories);
