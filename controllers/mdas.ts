@@ -189,9 +189,16 @@ const getMdaByBusiness = async (req: Request, res: Response) => {
 		}
 		const { id } = req.params;
 
-		const { page = 1, pageSize = '10' } = req.query;
+		const { page = 1, pageSize } = req.query;
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
+		let cond;
+
+		if (pageSize && page)
+			cond = {
+				limit: parseInt(pageSize as string, 10),
+				offset: offset,
+			};
 		const business = await DB.businesses.findOne({ where: { id } });
 		if (!business) throw new Error('Business not found!');
 
@@ -201,18 +208,23 @@ const getMdaByBusiness = async (req: Request, res: Response) => {
 				businessId: id,
 			},
 			order: [['id', 'DESC']],
-			limit: parseInt(pageSize as string, 10),
-			offset: offset,
+			...cond,
 		});
 
 		if (!mdas.length) return successResponse(res, `No mda in this business available!`, []);
 		if (mdas) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
+			let resp;
+
+			if (pageSize)
+				resp = {
+					totalPages,
+					currentPage: parseInt(page as string, 10),
+				};
 			return successResponse(res, `${mdas.length} mda${mdas.length > 1 ? 's' : ''} retrieved!`, {
-				totalPages,
+				...resp,
 				count,
-				currentPage: parseInt(page as string, 10),
 				data: [
 					// ...business.dataValues,
 					...mdas,
