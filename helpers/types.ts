@@ -184,5 +184,4 @@ export type PaymentLogDataType = {
 	businessId: number;
 	mdaId: number;
 	revenueHeadId: number;
-	staffId: number;
 };

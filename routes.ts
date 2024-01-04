@@ -64,7 +64,7 @@ router.get('/revenue-head/mda/:id', validate('id'), revenueHead.getRevenueHeadBy
 router.post('/revenue-head', isAuthorized, validate('create-revenue-heads'), revenueHead.createRevenueHead);
 router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 
-router.post('/payment/log', isAuthorized, validate('log-payment'), payments.logPayment);
+router.post('/payment/log', validate('log-payment'), payments.logPayment);
 router.get('/payments', isAuthorized, payments.getPaymentLogs);
 router.post('/payment/webhook', payments.paymentWebhook);
 

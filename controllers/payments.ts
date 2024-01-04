@@ -26,8 +26,6 @@ const logPayment = async (req: Request, res: Response) => {
 	const { mda } = revenueHead.data.dataValues;
 	const { business } = mda.dataValues;
 
-	console.log('🚀 ~ file: payments.ts:40 ~ logPayment ~ insertData:', req?.staff?.id);
-
 	const insertData: PaymentLogDataType = {
 		payeeName,
 		payeePhone,
@@ -37,7 +35,6 @@ const logPayment = async (req: Request, res: Response) => {
 		businessId: business.dataValues.id,
 		mdaId: mda.dataValues.id,
 		revenueHeadId,
-		staffId: req.staff.id,
 	};
 	try {
 		const logPayment: any = await DB.paymentReports.create(insertData);
