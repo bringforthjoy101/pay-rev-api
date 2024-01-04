@@ -89,7 +89,7 @@ const logPayment = async (req: Request, res: Response) => {
 			});
 
 			console.log(sendEmail);
-			return successResponse(res, `Payment successfully logged`);
+			return successResponse(res, `Payment successfully logged`, logPayment);
 		}
 		return errorResponse(res, `An error occured`);
 	} catch (error) {

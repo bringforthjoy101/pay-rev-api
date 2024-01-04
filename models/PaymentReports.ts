@@ -17,6 +17,10 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
+			status: {
+				type: Sequelize.ENUM('init', 'pending', 'completed', 'failed'),
+				defaultValue: 'init',
+			},
 			payeePhone: Sequelize.STRING,
 			payeeEmail: Sequelize.STRING,
 			transRef: Sequelize.STRING,
