@@ -10,7 +10,9 @@
     "start": "npm run build && node ./build/app.js",
     "postinstall": "tsc"
   },
-  "engines": { "node": "14.17.3" },
+  "engines": {
+    "node": "14.17.3"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -43,8 +45,8 @@
     "nodemailer": "^6.7.2",
     "otp-generator": "^4.0.0",
     "sequelize": "^5.21.3",
-    "twilio": "^3.73.0",
     "ts-node": "^10.4.0",
+    "twilio": "^3.73.0",
     "typescript": "^4.5.4"
   }
 }

@@ -95,6 +95,9 @@ const validate = (method: string): any => {
 				body('revenueHeadId').not().isEmpty().isUUID().withMessage('revenueHeadId is required!'),
 			];
 		}
+		case 'complete-payment': {
+			return [param('tnxRef').not().isEmpty().isString().withMessage('tnxRef is required!')];
+		}
 	}
 };
 

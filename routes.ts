@@ -65,6 +65,7 @@ router.post('/revenue-head', isAuthorized, validate('create-revenue-heads'), rev
 router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 
 router.post('/payment/log', validate('log-payment'), payments.logPayment);
+router.post('/payment/complete/:tnxRef', validate('complete-payment'), payments.completePayment);
 router.get('/payments', isAuthorized, payments.getPaymentLogs);
 router.post('/payment/webhook', payments.paymentWebhook);
 

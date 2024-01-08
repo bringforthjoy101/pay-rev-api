@@ -10,6 +10,7 @@ import { prepareMail } from '../helpers/mailer/mailer';
 import { paymentNotifTemplateData } from '../helpers/mailer/templateData';
 import { paymentNotifTemplate } from '../helpers/mailer/template';
 import DB from './db';
+import { fpAxios } from '../helpers/axios';
 
 // log payment
 const logPayment = async (req: Request, res: Response) => {
@@ -111,7 +112,6 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-				{ model: DB.staffs, as: 'staff', attributes: { exclude: ['createdAt', 'updatedAt', 'password'] } },
 			],
 			order: [['id', 'DESC']],
 		});
@@ -138,7 +138,7 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 		);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return errorResponse(res, `An error occured - ${error}`);
 	}
 };
 
@@ -230,9 +230,44 @@ const paymentWebhook = async (req: Request, res: Response) => {
 	}
 };
 
+const completePayment = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	try {
+		const { tnxRef } = req.params;
+
+		const payment: any = await DB.paymentReports.findOne({
+			where: {
+				transRef: tnxRef,
+			},
+			include: { model: DB.mdas.scope('withSecretKey') },
+		});
+
+		const encondedRef = Buffer.from(payment.mda.dataValues.secretKey).toString('base64');
+
+		const fpResp = await fpAxios
+			.get(`/transaction/verify/${tnxRef}`, {
+				headers: {
+					Authorization: `Basic ${encondedRef}`,
+					'x-api-client': 'modal',
+				},
+			})
+			.catch((error) => {
+				throw new Error(error.response.data.message);
+			});
+
+		return successResponse(res, `Payment successfully logged`, payment);
+	} catch (error) {
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
+
 export default {
 	logPayment,
 	getPaymentLogs,
 	getPaymentLogDetails,
 	paymentWebhook,
+	completePayment,
 };
