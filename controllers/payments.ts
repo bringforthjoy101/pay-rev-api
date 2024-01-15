@@ -264,9 +264,33 @@ const completePayment = async (req: Request, res: Response) => {
 	}
 };
 
+const getPaymentLogsById = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { id } = req.params;
+	try {
+		const paymentLog = await DB.paymentReports.findOne({
+			where: { id },
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			],
+		});
+		if (!paymentLog) return errorResponse(res, `Payment log with id ${id} not found!`);
+		return successResponse(res, `Payment log retrived!`, paymentLog);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occured - ${error}`);
+	}
+};
+
 export default {
 	logPayment,
 	getPaymentLogs,
+	getPaymentLogsById,
 	getPaymentLogDetails,
 	paymentWebhook,
 	completePayment,
