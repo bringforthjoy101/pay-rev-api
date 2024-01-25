@@ -8,6 +8,7 @@ import business from './controllers/businesses';
 import mda from './controllers/mdas';
 import category from './controllers/categories';
 import revenueHead from './controllers/revenueHeads';
+import invoice from './controllers/invoices';
 import validate from './validate';
 import { isAdmin, isAdminOrStaff, isAuthorized, isStaff } from './helpers/middlewares';
 import { AdminRoles, StaffRoles } from './helpers/types';
@@ -69,5 +70,9 @@ router.post('/payment/complete/:tnxRef', validate('complete-payment'), payments.
 router.get('/payments', isAuthorized, payments.getPaymentLogs);
 router.get('/payments/:id', isAuthorized, payments.getPaymentLogsById);
 router.post('/payment/webhook', payments.paymentWebhook);
+
+router.post('/invoice', isAuthorized, validate('create-invoice'), invoice.createInvoice);
+router.get('/invoice', isAuthorized, invoice.getInvoices);
+router.get('/invoice/:id', isAuthorized, invoice.getInvoicesById);
 
 export default router;

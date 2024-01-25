@@ -45,6 +45,7 @@ export default function (sequelize: any, Sequelize: any) {
 
 	RevenueHeads.associate = function (models: any) {
 		models.revenueHeads.belongsTo(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'mdaId' });
+		models.revenueHeads.hasMany(models.invoices, { onDelete: 'cascade' });
 	};
 
 	return RevenueHeads;

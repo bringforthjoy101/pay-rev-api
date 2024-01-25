@@ -98,6 +98,12 @@ const validate = (method: string): any => {
 		case 'complete-payment': {
 			return [param('tnxRef').not().isEmpty().isString().withMessage('tnxRef is required!')];
 		}
+		case 'create-invoice': {
+			return [
+				body('amount').not().isEmpty().isCurrency().withMessage('amount is required!'),
+				body('revenueHeadId').not().isEmpty().isUUID().withMessage('revenueHeadId is required!'),
+			];
+		}
 	}
 };
 
