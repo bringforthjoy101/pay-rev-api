@@ -46,6 +46,25 @@ const getInvoices = async (req: Request, res: Response) => {
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
 			offset: offset,
+			attributes: {
+				exclude: ['revenueHeadId'],
+			},
+			include: [
+				{
+					model: DB.revenueHeads,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'mdaId'],
+					},
+					include: [
+						{
+							model: DB.mdas,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
+							},
+						},
+					],
+				},
+			],
 		});
 
 		if (!invoices.length) return successResponse(res, `No invoice available!`, []);
