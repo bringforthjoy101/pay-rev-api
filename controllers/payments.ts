@@ -11,6 +11,8 @@ import { paymentNotifTemplateData } from '../helpers/mailer/templateData';
 import { paymentNotifTemplate } from '../helpers/mailer/template';
 import DB from './db';
 import { fpAxios } from '../helpers/axios';
+import { Op, QueryTypes, Sequelize } from 'sequelize';
+import sequelize from 'sequelize';
 
 // log payment
 const logPayment = async (req: Request, res: Response) => {
@@ -287,6 +289,298 @@ const getPaymentLogsById = async (req: Request, res: Response) => {
 	}
 };
 
+const getPaymentLogsByBusiness = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { businessId } = req.params;
+	try {
+		const paymentLog = await DB.paymentReports.findAll({
+			where: { businessId },
+			order: [['createdAt', 'DESC']],
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			],
+		});
+		if (!paymentLog.length) return errorResponse(res, `Payment log not found!`);
+		return successResponse(res, `Payment log retrieved!`, paymentLog);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occured - ${error}`);
+	}
+};
+
+const getRecentPaymentLogs = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { businessId } = req.params;
+	try {
+		const paymentLog = await DB.paymentReports.findAll({
+			where: { businessId },
+			order: [['createdAt', 'DESC']],
+      		limit: 5,
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			],
+		});
+		if (!paymentLog.length) return errorResponse(res, `Payment log not found!`);
+		return successResponse(res, `Payment log retrieved!`, paymentLog);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occured - ${error}`);
+	}
+};
+const getTransactionAnalytics  = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { businessId } = req.params;
+
+	const { filterBy } = req.body; // Assuming selection contains 'week', 'month', or 'year'
+
+    let startDate, endDate;
+
+    
+	try {
+
+
+
+		 let transactions: any[] = [];
+		 let completedPayments: any[] = [];
+		 let failedPayments: any[] = [];
+		 let labels: any[] = [];
+
+	  
+		if(filterBy === 'week') {
+
+		const startDate = new Date();
+		startDate.setDate(startDate.getDate() - 7);
+		const endDate = new Date();
+	
+		// Fetch transactions from the last 7 days
+		 transactions = await DB.paymentReports.findAll({
+		  where: {
+			createdAt: {
+			  [Op.between]: [startDate, endDate],
+			},
+		  },
+		  attributes: [
+			[sequelize.literal("DAYNAME(createdAt)"), 'dayName'], // Extract day name from transaction date
+			[sequelize.fn('sum', sequelize.literal("CASE WHEN status = 'completed' THEN amount ELSE 0 END")), 'completedTransaction'], // Sum of completed transaction amounts
+			[sequelize.fn('sum', sequelize.literal("CASE WHEN status = 'failed' THEN amount ELSE 0 END")), 'failedTransaction'], // Sum of failed transaction amounts
+			[sequelize.fn('sum', sequelize.col('amount')), 'totalTransaction'], // Sum of total transaction amounts
+		  ],
+		  group: ['dayName'], // Group by day name
+		  order: sequelize.literal('FIELD(dayName, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")'), // Order by day of the week
+		});
+	
+		//  Prepare data for line chart
+		 labels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // All days of the week
+		const data = transactions.reduce((acc: any, cur: any) => {
+			console.log(cur)
+		  acc[cur.dataValues.dayName] = {
+			completedPayments: cur.dataValues.completedTransaction,
+			failedPayments: cur.dataValues.failedTransaction,
+			totalTransactions: cur.dataValues.totalTransaction,
+		  };
+		  return acc;
+		}, {});
+	
+		 completedPayments = labels.map(label => data[label]?.completedPayments || 0); // Fill in completed payment amounts for each day, or zero if no completed payments
+		 failedPayments = labels.map(label => data[label]?.failedPayments || 0); // Fill in failed payment amounts for each day, or zero if no failed payments
+		// const totalTransactions = labels.map(label => data[label]?.totalTransactions || 0); // Fill in total transaction amounts for each day, or zero if no transactions
+		
+	}
+		// // Construct the data object for the line chart
+		// const chartData = {
+		//   labels,
+		//   datasets: [
+		// 	{
+		// 	  label: 'Total Transactions',
+		// 	  data: completedPayments,
+		// 	  borderColor: 'blue',
+		// 	  fill: false,
+		// 	},
+		// 	{
+		// 	  label: 'Failed Transactions',
+		// 	  data: failedPayments,
+		// 	  borderColor: 'red',
+		// 	  fill: false,
+		// 	},
+		//   ],
+		// };
+
+	if(filterBy === 'year') {
+    // Calculate start date (first day of the current year) and end date (last day of the current year)
+    const startDate = new Date(new Date().getFullYear(), 0, 1, 0, 0, 0); // First day of the current year
+    const endDate = new Date(new Date().getFullYear() + 1, 0, 0, 23, 59, 59, 999); // Last day of the current year
+
+    // Fetch transactions within the current year
+    const result = await DB.paymentReports.findAll({
+		attributes: [
+		  [sequelize.literal('DATE_FORMAT(createdAt, "%Y-%m")'), 'yearMonth'], // Format year and month as "YYYY-MM"
+		  [sequelize.fn('SUM', sequelize.literal("CASE WHEN status = 'completed' THEN amount ELSE 0 END")), 'completedPayments'],
+		  [sequelize.fn('SUM', sequelize.literal("CASE WHEN status = 'failed' THEN amount ELSE 0 END")), 'failedPayments']
+		],
+		where: {
+		  createdAt: {
+			[Op.between]: [startDate, endDate],
+		  },
+		},
+		group: ['yearMonth'],
+		order: [sequelize.literal('yearMonth')] // Order by year and month
+	  });
+  
+     	// Prepare data for line chart
+		
+		result.forEach((row:any) => {
+		labels.push(row.dataValues.yearMonth); // Add year-month as label
+		completedPayments.push(parseFloat(row.dataValues.completedPayments));
+		failedPayments.push(parseFloat(row.dataValues.failedPayments));
+		});
+	}
+
+	if(filterBy === 'month') {
+		// Calculate start date (first day of the current month) and end date (last day of the current month)
+		const startDate = new Date();
+		startDate.setDate(1);
+		startDate.setHours(0, 0, 0, 0); // Set start date to the beginning of the day
+		const endDate = new Date(startDate);
+		endDate.setMonth(endDate.getMonth() + 1); // Move to the next month
+		endDate.setDate(0); // Set to the last day of the current month
+		endDate.setHours(23, 59, 59, 999); // Set end date to the end of the day
+	
+		// Fetch transactions within the current month and aggregate by day
+		const result = await DB.paymentReports.findAll({
+			attributes: [
+			  [sequelize.literal('DATE(createdAt)'), 'day'], // Extract day from createdAt
+			  [sequelize.fn('SUM', sequelize.literal("CASE WHEN status = 'completed' THEN amount ELSE 0 END")), 'completedPayments'],
+			  [sequelize.fn('SUM', sequelize.literal("CASE WHEN status = 'failed' THEN amount ELSE 0 END")), 'failedPayments']
+			],
+			where: {
+			  createdAt: {
+				[Op.between]: [startDate, endDate],
+			  },
+			},
+			group: ['day'],
+			order: [sequelize.literal('DATE(createdAt)')] // Order by the day of the month
+		  });
+	
+		// Prepare data for line chart
+		result.forEach((row: any) => {
+		  labels.push(row.dataValues.day); // Add day as label
+		  completedPayments.push(parseFloat(row.dataValues.completedPayments));
+		  failedPayments.push(parseFloat(row.dataValues.failedPayments));
+		})
+	}
+		 // Construct the data object for the line chart
+		 const chartData = {
+		   labels,
+		   datasets: [
+			 {
+			   label: 'Completed Payments',
+			   data: completedPayments,
+			   borderColor: 'green',
+			   fill: false,
+			 },
+			 {
+			   label: 'Failed Payments',
+			   data: failedPayments,
+			   borderColor: 'red',
+			   fill: false,
+			 },
+		   ],
+		 };
+	 
+	
+
+		// if (!chartData.length) return errorResponse(res, `Payment log not found!`);
+		return successResponse(res, `Transactions retrieved!`, chartData);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occured - ${error}`);
+	}
+};
+
+// Function to get the week index for a given date
+const getWeekIndex = (date: any, startDate: any) => {
+	const currentDate: any = new Date(date);
+	const numDays = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
+	return Math.floor(numDays / 7);
+  };
+
+const getRevenueOverview  = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { businessId } = req.params;
+
+	const { filterBy } = req.body; // Assuming selection contains 'week', 'month', or 'year'
+
+    let startDate, endDate;
+
+    
+	try {
+
+		// Calculate start and end dates based on the user's selection
+		switch (filterBy) {
+			case 'week':
+			  startDate = new Date();
+			  startDate.setDate(startDate.getDate() - 7); // Start date 7 days ago
+			  endDate = new Date(); // End date today
+			  break;
+			case 'month':
+			  const date = new Date();
+			  startDate = new Date(date.getFullYear(), date.getMonth(), 1); // Start date of the current month
+			  endDate = new Date(); // End date today
+			  break;
+			case 'year':
+			  startDate = new Date(new Date().getFullYear(), 0, 1); // Start date of the current year
+			  endDate = new Date(); // End date today
+			  break;
+			default:
+			  return res.status(400).json({ error: 'Invalid selection' });
+		  }
+
+		   // Fetch transactions within the selected timeframe
+		   const transactions = await DB.paymentReports.findAll({
+			where: {
+			  createdAt: {
+				[Op.between]: [startDate, endDate],
+			  },
+			},
+			attributes: [
+				[sequelize.literal(`SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END)`), 'completedPayments'], // Sum of completed payments
+				[sequelize.literal(`SUM(CASE WHEN status = 'failed' THEN amount ELSE 0 END)`), 'failedPayments'], // Sum of failed payments
+				[sequelize.literal(`SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END)`), 'pendingPayments'], // Sum of pending payments
+			  ],
+		  });
+	  
+		  // Prepare data for response
+		  const analyticsData = {
+			// revenueAccountBalance: transactions.length > 0 ? transactions[0]?.dataValues?.totalAmount : 0,
+			completedPayments: transactions.length > 0 ? Number(transactions[0]?.dataValues?.completedPayments) : 0,
+			pendingPayments: transactions.length > 0 ? Number(transactions[0]?.dataValues?.pendingPayments) : 0,
+			failedPayments: transactions.length > 0 ? Number(transactions[0]?.dataValues?.failedPayments) : 0,
+		  };
+
+		if (!analyticsData) return errorResponse(res, `Payment log not found!`);
+		return successResponse(res, `Transactions retrieved!`, analyticsData);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occured - ${error}`);
+	}
+};
+
 export default {
 	logPayment,
 	getPaymentLogs,
@@ -294,4 +588,8 @@ export default {
 	getPaymentLogDetails,
 	paymentWebhook,
 	completePayment,
+	getRecentPaymentLogs,
+	getTransactionAnalytics,
+	getRevenueOverview,
+	getPaymentLogsByBusiness,
 };

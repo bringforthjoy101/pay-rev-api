@@ -68,11 +68,16 @@ router.put('/revenue-head/:id', isAuthorized, revenueHead.updateRevenueHead);
 router.post('/payment/log', validate('log-payment'), payments.logPayment);
 router.post('/payment/complete/:tnxRef', validate('complete-payment'), payments.completePayment);
 router.get('/payments', isAuthorized, payments.getPaymentLogs);
+router.get('/payment-logs/:businessId', isAuthorized, payments.getPaymentLogsByBusiness);
+router.get('/recent-payment-logs/:businessId', isAuthorized, payments.getRecentPaymentLogs);
+router.post('/transaction-analytics/:businessId', isAuthorized, payments.getTransactionAnalytics);
+router.post('/revenue-overview/:businessId', isAuthorized, payments.getRevenueOverview);
 router.get('/payments/:id', isAuthorized, payments.getPaymentLogsById);
 router.post('/payment/webhook', payments.paymentWebhook);
 
 router.post('/invoice', isAuthorized, validate('create-invoice'), invoice.createInvoice);
 router.get('/invoice', isAuthorized, invoice.getInvoices);
 router.get('/invoice/:id', isAuthorized, invoice.getInvoicesById);
+
 
 export default router;
