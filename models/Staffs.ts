@@ -29,10 +29,10 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			profilePixUrl: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
+			// profilePixUrl: {
+			// 	type: Sequelize.STRING,
+			// 	allowNull: false,
+			// },
 			role: {
 				type: Sequelize.ENUM('field', 'admin'),
 				defaultValue: 'admin',
