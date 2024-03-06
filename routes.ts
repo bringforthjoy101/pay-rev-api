@@ -2,7 +2,7 @@
 import { NextFunction, Router } from 'express';
 
 // Import function files
-import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings } from './controllers/authentication';
+import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings, updateProfileSettings } from './controllers/authentication';
 import admin from './controllers/admins';
 import business from './controllers/businesses';
 import mda from './controllers/mdas';
@@ -32,6 +32,7 @@ router.post('/reset-password', validate('/reset-password'), resetPassword);
 router.post('/change-password', validate('/change-password'), changePassword);
 router.post('/verify-otp', validate('/verify-otp'), verifyOtp);
 router.post('/update-user-settings', validate('/update-user-settings'), updateUserSettings);
+router.post('/update-profile-settings', validate('/update-profile-settings'), updateProfileSettings);
 
 router.post('/admin/register', validate('/register'), admin.register);
 router.post('/admin/login', validate('/login'), admin.login);

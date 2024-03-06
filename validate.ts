@@ -11,6 +11,13 @@ const validate = (method: string): any => {
 				body('role').optional().isString().withMessage('role is required'),
 			];
 		}
+		case '/update-profile-settings': {
+			return [
+				body('names').optional().isString().withMessage('names is required!'),
+				body('email').optional().isString().withMessage('Email is required!'),
+				body('phone').optional().isString().withMessage('Phone is required!'),
+			];
+		}
 		case '/login': {
 			return [
 				body('email').not().isEmpty().isString().withMessage('Email is required!'),

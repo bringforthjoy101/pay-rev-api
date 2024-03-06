@@ -229,3 +229,31 @@ export const updateUserSettings = async (req: Request, res: Response) => {
 		return errorResponse(res, `An error occured - ${error}`);
 	}
 };
+
+export const updateProfileSettings = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { names, email, phone, } = req.body;
+	const { id } = req.staff;
+
+	try {
+
+		const profilePixUrl = "";
+		
+		const data = {
+			names,
+			email,
+			phone,
+			profilePixUrl,
+		}
+		const staff = await DB.staffs.findOne({ where: { id } });
+		const updatedSettings: any = await staff.update(data);
+		if (!updatedSettings) return errorResponse(res, `Unable update profile settings!`);
+		return successResponse(res, `Profile settings updated successfully`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
