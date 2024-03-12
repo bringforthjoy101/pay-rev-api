@@ -21,10 +21,12 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.JSON,
 				allowNull: false,
 			},
+		},{
+			freezeTableName: true,
 		});
 
 	Role.associate = function (models: any) {
-		models.roles.belongsTo(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
+		models.roles.hasMany(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
 	};
 
 	return Role;

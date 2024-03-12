@@ -22,6 +22,11 @@ export const getOtpTemplateData = ({ otp, type }: GetOtpTemplateDataType) => {
 				<p>This Otp is valid for only 10 minutes</p>
 			`,
 		};
+	}  else if (type === typeEnum.ADD_ACCOUNT) {
+		return {
+			mailSubject: 'Your New Account Details',
+			mailBody: `${otp}`,
+		};
 	} else {
 		return {
 			mailSubject: 'Two Factor Authentication',
@@ -33,6 +38,13 @@ export const getOtpTemplateData = ({ otp, type }: GetOtpTemplateDataType) => {
 		};
 	}
 };
+
+export const getAccountTemplateData = (body: string) => {
+	return {
+		mailSubject: 'Your New Account Details',
+		mailBody: `${body}`,
+	};
+}
 
 export const paymentNotifTemplateData = ({ party, paymentData }: PaymentNotifTemplateDataType) => {
 	const { phone, amount, date, business } = paymentData;

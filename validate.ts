@@ -8,7 +8,16 @@ const validate = (method: string): any => {
 				body('email').not().isEmpty().isString().withMessage('Email is required!'),
 				body('password').not().isEmpty().isString().withMessage('Password is required!'),
 				body('phone').not().isEmpty().isString().withMessage('Phone is required!'),
-				body('role').optional().isString().withMessage('role is required'),
+				body('roleId').optional().isString().withMessage('role is required'),
+			];
+		}
+		case '/staff/add-account': {
+			return [
+				body('names').not().isEmpty().isString().withMessage('names is required!'),
+				body('email').not().isEmpty().isString().withMessage('Email is required!'),
+				body('phone').not().isEmpty().isString().withMessage('Phone is required!'),
+				body('roleId').optional().isString().withMessage('role is required'),
+				body('businessId').optional().isString().withMessage('role is required'),
 			];
 		}
 		case '/update-profile-settings': {

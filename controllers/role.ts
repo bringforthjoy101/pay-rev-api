@@ -1,0 +1,106 @@
+import { validationResult } from 'express-validator';
+import { errorResponse, handleResponse, successResponse } from '../helpers/utility';
+import { Request, Response } from 'express';
+import DB from './db';
+
+const createRole = async (req: Request, res: Response) => {
+	// const errors = validationResult(req);
+	// if (!errors.isEmpty()) {
+	// 	return errorResponse(res, 'Validation Error', errors.array());
+	// }
+
+	const { roleName, permissions } = req.body;
+
+	try {
+		const revenueHead = await DB.roles.findOne({ where: { id: roleName } });
+		if (revenueHead) return errorResponse(res, `Role already exists`);
+
+		const insertData = {
+			roleName,
+			permissions,
+		};
+
+		const role: any = await DB.roles.create(insertData);
+
+		if (role) {
+			return successResponse(res, `Role creation successful`);
+		}
+		return errorResponse(res, `An error occurred`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occurred - ${error}`);
+	}
+};
+
+const getRoles = async (req: Request, res: Response) => {
+	try {
+	
+		const roles = await DB.roles.findAll({ order: [['id', 'DESC']] });
+
+		if (!roles.length) return successResponse(res, `No role available!`, []);
+		return successResponse(res, `${roles.length} category${roles.length > 1 ? 'es' : ''} retrieved!`, roles);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+	}
+};
+
+
+const getRole = async (req: Request, res: Response) => {
+	// const errors = validationResult(req);
+	// if (!errors.isEmpty()) {
+	// 	return errorResponse(res, 'Validation Error', errors.array());
+	// }
+	const { id } = req.params;
+	try {
+		const role = await DB.roles.findOne({ where: { id } });
+		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
+		return successResponse(res, `Role details retrieved!`, role);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+	}
+};
+
+
+const updateRole = async (req: Request, res: Response) => {
+	// const errors = validationResult(req);
+	// if (!errors.isEmpty()) {
+	// 	return errorResponse(res, 'Validation Error', errors.array());
+	// }
+	const { id } = req.params;
+	const { roleName, permissions } = req.body;
+	try {
+		const role = await DB.roles.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		if (!role) return errorResponse(res, `Role not found!`);
+		const updateData = {
+			name: roleName || role.roleName,
+			permissions: permissions || role.permissions,
+		};
+		const updatedRole: any = await role.update(updateData);
+		if (!updatedRole) return errorResponse(res, `Unable to update role!`);
+		return successResponse(res, `Role updated successfully`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occurred - ${error}`);
+	}
+};
+
+const deleteRole = async (req: Request, res: Response) => {
+	// const errors = validationResult(req);
+	// if (!errors.isEmpty()) {
+	// 	return errorResponse(res, 'Validation Error', errors.array());
+	// }
+	const { id } = req.params;
+	try {
+		const checkRole = await DB.roles.findOne({ where: { id } });
+		if (!checkRole) return errorResponse(res, `Role with ID ${id} not found!`);
+		await checkRole.destroy({ force: true });
+		return successResponse(res, `Role with ID ${id} deleted successfully!`);
+	} catch (error) {
+		console.log(error);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+	}
+};
+
+export default { createRole, getRoles, getRole, updateRole, deleteRole, };

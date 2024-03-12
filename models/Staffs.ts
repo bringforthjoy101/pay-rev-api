@@ -29,14 +29,14 @@ export default function (sequelize: any, Sequelize: any) {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			// profilePixUrl: {
-			// 	type: Sequelize.STRING,
-			// 	allowNull: false,
-			// },
-			role: {
-				type: Sequelize.ENUM('field', 'admin'),
-				defaultValue: 'admin',
+			imageUrl: {
+				type: Sequelize.STRING,
+				allowNull: true,
 			},
+			// role: {
+			// 	type: Sequelize.ENUM('field', 'admin'),
+			// 	defaultValue: 'admin',
+			// },
 			status: {
 				type: Sequelize.ENUM('active', 'inactive'),
 				defaultValue: 'active',
@@ -49,14 +49,14 @@ export default function (sequelize: any, Sequelize: any) {
 					key: 'id',
 				},
 			},
-			// roleId: {
-			// 	type: Sequelize.UUID,
-			// 	allowNull: false,
-			// 	references: {
-			// 		model: 'roles',
-			// 		key: 'id',
-			// 	},
-			// },
+			roleId: {
+				type: Sequelize.UUID,
+				allowNull: false,
+				references: {
+					model: 'roles',
+					key: 'id',
+				},
+			},
 			// branchId: {
 			// 	type: Sequelize.UUID,
 			// 	allowNull: false,
@@ -79,7 +79,7 @@ export default function (sequelize: any, Sequelize: any) {
 	Staffs.associate = function (models: any) {
 		models.staffs.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
 		models.staffs.hasOne(models.staffSettings, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
-		// models.staffs.hasOne(models.roles, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
+		models.staffs.belongsTo(models.roles, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
 	};
 
 	return Staffs;

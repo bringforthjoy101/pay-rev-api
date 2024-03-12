@@ -2,10 +2,11 @@
 import { NextFunction, Router } from 'express';
 
 // Import function files
-import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings, updateProfileSettings } from './controllers/authentication';
+import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings, updateProfileSettings, addAccount } from './controllers/authentication';
 import admin from './controllers/admins';
 import business from './controllers/businesses';
 import mda from './controllers/mdas';
+import role from './controllers/role';
 import category from './controllers/categories';
 import revenueHead from './controllers/revenueHeads';
 import invoice from './controllers/invoices';
@@ -26,6 +27,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/staff/register', validate('staff-register'), register);
+router.post('/staff/add-account', isAuthorized, validate('/staff/add-account'), addAccount);
 router.post('/login', validate('/login'), preLogin);
 router.post('/update-password', validate('/update-password'), updatePassword);
 router.post('/reset-password', validate('/reset-password'), resetPassword);
@@ -79,6 +81,12 @@ router.post('/payment/webhook', payments.paymentWebhook);
 router.post('/invoice', isAuthorized, validate('create-invoice'), invoice.createInvoice);
 router.get('/invoice', isAuthorized, invoice.getInvoices);
 router.get('/invoice/:id', isAuthorized, invoice.getInvoicesById);
+
+router.get('/role', role.getRoles);
+router.get('/role/get-details/:id', validate('id'), role.getRole);
+router.delete('/role/delete/:id', validate('id'), role.deleteRole);
+router.post('/role/create', role.createRole);
+router.post('/role/update/:id', role.updateRole);
 
 
 export default router;

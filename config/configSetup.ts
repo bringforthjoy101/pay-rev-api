@@ -56,6 +56,9 @@ const getConfig = (): Config => {
 			'/admin/login',
 			'/admin/change-password',
 			'/admin/reset-password',
+			'/role/create',
+			'/role',
+			'/role/update/',
 		],
 	};
 };

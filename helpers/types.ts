@@ -8,6 +8,16 @@ export type RegisterDataType = {
 	role?: string;
 };
 
+export type StaffRegisterDataType = {
+	names: string;
+	phone: string;
+	email: string;
+	password: string;
+	businessId?: string;
+	branchId?: string;
+	roleId?: string;
+};
+
 export type AuthPayloadDataType = {
 	id: number;
 	names: string;
@@ -63,6 +73,7 @@ export type OtpDetailsDataType = {
 export enum typeEnum {
 	VERIFICATION = 'verification',
 	RESET = 'reset',
+	ADD_ACCOUNT = 'account',
 	TWOFA = '2fa',
 }
 
