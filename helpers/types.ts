@@ -16,6 +16,7 @@ export type StaffRegisterDataType = {
 	businessId?: string;
 	branchId?: string;
 	roleId?: string;
+	mdas?: any;
 };
 
 export type AuthPayloadDataType = {

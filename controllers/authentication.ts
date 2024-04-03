@@ -69,7 +69,7 @@ export const addAccount = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { names, phone, email, businessId, roleId } = req.body;
+	const { names, phone, email, businessId, roleId, mdas, } = req.body;
 
 	const business = await checkBusiness(businessId);
 	if (!business.status) return errorResponse(res, 'Business Not found');
@@ -79,7 +79,7 @@ export const addAccount = async (req: Request, res: Response) => {
 	const salt: string = await bcrypt.genSalt(15);
 	const hashPassword: string = await bcrypt.hash(password, salt);
 
-	let insertData: StaffRegisterDataType = { names, phone, email, password: hashPassword, businessId, roleId, };
+	let insertData: StaffRegisterDataType = { names, phone, email, password: hashPassword, businessId, roleId, mdas, };
 
 	try {
 		const staffExists: any = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
@@ -297,7 +297,7 @@ export const updateProfileSettings = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, phone, } = req.body;
+	const { names, email, phone, mdas, } = req.body;
 	const { id } = req.staff;
 
 	try {
@@ -309,11 +309,36 @@ export const updateProfileSettings = async (req: Request, res: Response) => {
 			email,
 			phone,
 			profilePixUrl,
+			mdas
 		}
 		const staff = await DB.staffs.findOne({ where: { id } });
 		const updatedSettings: any = await staff.update(data);
 		if (!updatedSettings) return errorResponse(res, `Unable update profile settings!`);
 		return successResponse(res, `Profile settings updated successfully`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
+
+export const changeRole = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { names, email, roleId, } = req.body;
+
+	try {
+		
+		const data = {
+			names,
+			email,
+			roleId,
+		}
+		const staff = await DB.staffs.findOne({ where: { email } });
+		const updatedSettings: any = await staff.update(data);
+		if (!updatedSettings) return errorResponse(res, `Unable to change role!`);
+		return successResponse(res, `Role changed successfully`);
 	} catch (error) {
 		console.log(error);
 		return errorResponse(res, `An error occured - ${error}`);

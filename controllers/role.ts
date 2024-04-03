@@ -35,10 +35,20 @@ const createRole = async (req: Request, res: Response) => {
 const getRoles = async (req: Request, res: Response) => {
 	try {
 	
-		const roles = await DB.roles.findAll({ order: [['id', 'DESC']] });
+		const roles = await DB.roles.findAll({ 
+			include: "staffs",
+			order: [['id', 'DESC']]
+		 });
 
-		if (!roles.length) return successResponse(res, `No role available!`, []);
-		return successResponse(res, `${roles.length} category${roles.length > 1 ? 'es' : ''} retrieved!`, roles);
+		 const transformedRoles = roles?.map((role: any) => {
+			return {
+			  ...role?.dataValues,
+			  staffs: role?.dataValues.staffs.length
+			};
+		 });
+
+		if (!transformedRoles?.length) return successResponse(res, `No role available!`, []);
+		return successResponse(res, `${transformedRoles.length} category${transformedRoles.length > 1 ? 'es' : ''} retrieved!`, transformedRoles);
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occurred - ${error}`);
@@ -47,15 +57,27 @@ const getRoles = async (req: Request, res: Response) => {
 
 
 const getRole = async (req: Request, res: Response) => {
-	// const errors = validationResult(req);
-	// if (!errors.isEmpty()) {
-	// 	return errorResponse(res, 'Validation Error', errors.array());
-	// }
 	const { id } = req.params;
 	try {
-		const role = await DB.roles.findOne({ where: { id } });
+		const role = await DB.roles.findOne({ 
+			include: "staffs", 
+			where: { id } });
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
-		return successResponse(res, `Role details retrieved!`, role);
+
+		const transformedUsers = role?.dataValues?.staffs?.map((staff: any) => {
+			return {
+			  id: staff.id,
+			  names: staff.names,
+			  email: staff.email,
+			  phone: staff.phone,
+			};
+		 });
+
+		 const transformedRole = {
+			...role?.dataValues,
+			staffs: transformedUsers
+		 }
+		return successResponse(res, `Role details retrieved!`, transformedRole);
 	} catch (error) {
 		console.log(error);
 		return handleResponse(res, 401, false, `An error occurred - ${error}`);

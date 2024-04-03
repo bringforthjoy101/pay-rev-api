@@ -25,6 +25,14 @@ const validate = (method: string): any => {
 				body('names').optional().isString().withMessage('names is required!'),
 				body('email').optional().isString().withMessage('Email is required!'),
 				body('phone').optional().isString().withMessage('Phone is required!'),
+				body('mdas').optional().isObject().withMessage('Phone is required!'),
+			];
+		}
+		case '/change-role': {
+			return [
+				body('names').optional().isString().withMessage('names is required!'),
+				body('email').optional().isString().withMessage('Email is required!'),
+				body('roleId').optional().isString().withMessage('Role ID is required!'),
 			];
 		}
 		case '/login': {

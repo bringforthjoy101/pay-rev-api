@@ -57,6 +57,10 @@ export default function (sequelize: any, Sequelize: any) {
 					key: 'id',
 				},
 			},
+			mdas: {
+				type: Sequelize.JSON,
+				allowNull: true,
+			},
 			// branchId: {
 			// 	type: Sequelize.UUID,
 			// 	allowNull: false,
