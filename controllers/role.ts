@@ -9,7 +9,7 @@ const createRole = async (req: Request, res: Response) => {
 	// 	return errorResponse(res, 'Validation Error', errors.array());
 	// }
 
-	const { roleName, permissions } = req.body;
+	const { roleName, permissions, description } = req.body;
 
 	try {
 		const revenueHead = await DB.roles.findOne({ where: { id: roleName } });
@@ -18,6 +18,7 @@ const createRole = async (req: Request, res: Response) => {
 		const insertData = {
 			roleName,
 			permissions,
+			description,
 		};
 
 		const role: any = await DB.roles.create(insertData);
@@ -91,12 +92,13 @@ const updateRole = async (req: Request, res: Response) => {
 	// 	return errorResponse(res, 'Validation Error', errors.array());
 	// }
 	const { id } = req.params;
-	const { roleName, permissions } = req.body;
+	const { roleName, permissions, description, } = req.body;
 	try {
 		const role = await DB.roles.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!role) return errorResponse(res, `Role not found!`);
 		const updateData = {
 			name: roleName || role.roleName,
+			description: description || role.description,
 			permissions: permissions || role.permissions,
 		};
 		const updatedRole: any = await role.update(updateData);
