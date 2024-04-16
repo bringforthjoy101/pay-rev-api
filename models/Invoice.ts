@@ -25,6 +25,22 @@ export default function (sequelize: any, Sequelize: any) {
 					key: 'id',
 				},
 			},
+			status: {
+				type: Sequelize.ENUM('init', 'pending', 'completed', 'failed'),
+				defaultValue: 'init',
+			},
+			invoiceId: {
+				type: Sequelize.STRING,
+				allowNull: true,
+			},
+			name: {
+				type: Sequelize.STRING,
+				allowNull: true,
+			},
+			email: {
+				type: Sequelize.STRING,
+				allowNull: true,
+			},
 		},
 		{
 			freezeTableName: true,

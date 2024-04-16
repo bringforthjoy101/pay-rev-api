@@ -77,11 +77,14 @@ router.get('/recent-payment-logs/:businessId', isAuthorized, payments.getRecentP
 router.post('/transaction-analytics/:businessId', isAuthorized, payments.getTransactionAnalytics);
 router.post('/revenue-overview/:businessId', isAuthorized, payments.getRevenueOverview);
 router.get('/payments/:id', isAuthorized, payments.getPaymentLogsById);
+router.get('/payments/email/:email', isAuthorized, payments.getPaymentLogsByEmail);
 router.post('/payment/webhook', payments.paymentWebhook);
 
 router.post('/invoice', isAuthorized, validate('create-invoice'), invoice.createInvoice);
 router.get('/invoice', isAuthorized, invoice.getInvoices);
 router.get('/invoice/:id', isAuthorized, invoice.getInvoicesById);
+router.get('/invoice/email/:email', isAuthorized, invoice.getInvoicesByEmail);
+router.post('/invoice/update/:id', isAuthorized, invoice.updateInvoice);
 
 router.get('/role', role.getRoles);
 router.get('/role/get-details/:id', validate('id'), role.getRole);

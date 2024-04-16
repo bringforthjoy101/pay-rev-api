@@ -73,7 +73,7 @@ const logPayment = async (req: Request, res: Response) => {
 				mailBody: paymentNotifTemplate({ subject: mailSubject, body: mailBody }),
 			});
 
-			// sending email to business email
+			// sendng email to business email
 			const { _mailSubject, _mailBody }: any = paymentNotifTemplateData({
 				party: payEnum.PAYER,
 				paymentData: {
@@ -104,39 +104,196 @@ const logPayment = async (req: Request, res: Response) => {
 // get all branches
 const getPaymentLogs = async (req: Request, res: Response) => {
 	try {
+
+		const { page = 1, pageSize = '' } = req.query;
+
 		const where: any = {};
+
 		if (req.staff) {
 			where.businessId = req.staff.businessId;
 		}
-		const paymentLogs = await DB.paymentReports.findAll({
+
+		if(!pageSize) {
+			const paymentLogs = await DB.paymentReports.findAll({
+				where,
+				order: [['createdAt', 'DESC']],
+				include: [
+					{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+					{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+					{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				],
+			});
+			// console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
+			if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
+
+			return successResponse(
+				res,
+				`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
+				 paymentLogs.map((log: any) => {
+						const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
+						return {
+							id,
+							payeeName,
+							transRef,
+							description: respDescription,
+							agencyName: mdas,
+							revenueHead: revenueHead,
+							staff: staff,
+							amount,
+							status: 'pending',
+							createdAt,
+						};
+					})
+				
+				
+			);
+		}
+
+		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
+
+		const { count, rows: paymentLogs }  = await DB.paymentReports.findAndCountAll({
 			where,
+			order: [['createdAt', 'DESC']],
+			limit: parseInt(pageSize as string, 10),
+			offset: offset,
 			include: [
 				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 			],
-			order: [['id', 'DESC']],
 		});
-		console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
+		// console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
 		if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
+		const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
 		return successResponse(
 			res,
 			`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
-			paymentLogs.map((log: any) => {
-				const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
-				return {
-					id,
-					payeeName,
-					transRef,
-					description: respDescription,
-					agencyName: mdas,
-					revenueHead: revenueHead,
-					staff: staff,
-					amount,
-					status: 'pending',
-					createdAt,
-				};
-			})
+			{
+				totalPages,
+				currentPage: parseInt(page as string, 10),
+				data: paymentLogs.map((log: any) => {
+					const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
+					return {
+						id,
+						payeeName,
+						transRef,
+						description: respDescription,
+						agencyName: mdas,
+						revenueHead: revenueHead,
+						staff: staff,
+						amount,
+						status: 'pending',
+						createdAt,
+					};
+				}),
+			}
+			
+		);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
+
+// get all branches
+const getPaymentLogsByEmail = async (req: Request, res: Response) => {
+	try {
+
+		const { page = 1, pageSize = '' } = req.query;
+
+		const { email } = req.params;
+
+		const where: any = {};
+
+		if(email) {
+			where.payeeEmail = {
+				[Op.like]: `%${email}%`,
+			};
+		}
+
+		
+
+		if (req.staff) {
+			where.businessId = req.staff.businessId;
+		}
+
+		if(!pageSize) {
+			const paymentLogs = await DB.paymentReports.findAll({
+				where,
+				order: [['createdAt', 'DESC']],
+				include: [
+					{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+					{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+					{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				],
+			});
+			// console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
+			if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
+
+			return successResponse(
+				res,
+				`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
+				 paymentLogs.map((log: any) => {
+						const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
+						return {
+							id,
+							payeeName,
+							transRef,
+							description: respDescription,
+							agencyName: mdas,
+							revenueHead: revenueHead,
+							staff: staff,
+							amount,
+							status: 'pending',
+							createdAt,
+						};
+					})
+				
+				
+			);
+		}
+
+		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
+
+		const { count, rows: paymentLogs }  = await DB.paymentReports.findAndCountAll({
+			where,
+			order: [['createdAt', 'DESC']],
+			limit: parseInt(pageSize as string, 10),
+			offset: offset,
+			include: [
+				{ model: DB.businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: DB.revenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			],
+		});
+		// console.log('🚀 ~ file: payments.ts:121 ~ getPaymentLogs ~ paymentLogs:', paymentLogs);
+		if (!paymentLogs.length) return successResponse(res, `No payment report available!`, []);
+		const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
+
+		return successResponse(
+			res,
+			`${paymentLogs.length} Payment report${paymentLogs.length > 1 ? 's' : ''} retrived!`,
+			{
+				totalPages,
+				currentPage: parseInt(page as string, 10),
+				data: paymentLogs.map((log: any) => {
+					const { id, createdAt, payeeName, transRef, mdas, revenueHead, amount, respDescription, staff } = log;
+					return {
+						id,
+						payeeName,
+						transRef,
+						description: respDescription,
+						agencyName: mdas,
+						revenueHead: revenueHead,
+						staff: staff,
+						amount,
+						status: 'pending',
+						createdAt,
+					};
+				}),
+			}
+			
 		);
 	} catch (error) {
 		console.log(error);
@@ -592,4 +749,5 @@ export default {
 	getTransactionAnalytics,
 	getRevenueOverview,
 	getPaymentLogsByBusiness,
+	getPaymentLogsByEmail,
 };
