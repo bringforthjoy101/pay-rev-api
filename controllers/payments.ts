@@ -423,6 +423,53 @@ const completePayment = async (req: Request, res: Response) => {
 	}
 };
 
+const revalidatePayment = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	try {
+		const { tnxRef } = req.params;
+
+		const payment: any = await DB.paymentReports.findOne({
+			where: {
+				transRef: tnxRef,
+			},
+			include: { model: DB.mdas.scope('withSecretKey') },
+		});
+
+		const encondedRef = Buffer.from(payment.mda.dataValues.secretKey).toString('base64');
+
+		const fpResp = await fpAxios
+			.get(`/checkout/revalidate-payment/${tnxRef}`, {
+				headers: {
+					Authorization: `Basic ${encondedRef}`,
+					'x-api-client': 'modal',
+				},
+			})
+
+			console.log('revalidation response ', fpResp)
+
+			if(!fpResp.status) {
+				throw new Error(fpResp.data.message)
+			}
+
+			await payment.update({
+				status: fpResp?.data?.status?.lowerCase() === 'successful' ? 'completed' : payment?.status,
+			});
+	
+		const updatedPayment: any = await DB.paymentReports.findOne({
+			where: {
+				transRef: tnxRef,
+			}
+		});
+
+		return successResponse(res, `Payment successfully logged`, updatedPayment);
+	} catch (error) {
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
+
 const getPaymentLogsById = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -750,4 +797,5 @@ export default {
 	getRevenueOverview,
 	getPaymentLogsByBusiness,
 	getPaymentLogsByEmail,
+	revalidatePayment,
 };
