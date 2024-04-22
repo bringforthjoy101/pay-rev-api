@@ -429,19 +429,20 @@ const revalidatePayment = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 	try {
-		const { tnxRef } = req.params;
+		const { id } = req.params;
 
 		const payment: any = await DB.paymentReports.findOne({
 			where: {
-				transRef: tnxRef,
+				transRef: id,
 			},
 			include: { model: DB.mdas.scope('withSecretKey') },
 		});
 
+		if (!payment) return errorResponse(res, `Payment log with transRef ${id} not found!`);
 		const encondedRef = Buffer.from(payment.mda.dataValues.secretKey).toString('base64');
 
 		const fpResp = await fpAxios
-			.get(`/checkout/revalidate-payment/${tnxRef}`, {
+			.get(`/checkout/revalidate-payment/${id}`, {
 				headers: {
 					Authorization: `Basic ${encondedRef}`,
 					'x-api-client': 'modal',
@@ -460,7 +461,7 @@ const revalidatePayment = async (req: Request, res: Response) => {
 	
 		const updatedPayment: any = await DB.paymentReports.findOne({
 			where: {
-				transRef: tnxRef,
+				transRef: id,
 			}
 		});
 
