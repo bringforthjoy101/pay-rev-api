@@ -61,7 +61,7 @@ const validate = (method: string): any => {
 			];
 		}
 		case '/verify-otp': {
-			const validType = ['verification', 'reset', '2fa'];
+			const validType = ['verification', 'reset', '2fa', 'validate'];
 			return [
 				body('token').not().isEmpty().isString().withMessage('token is required!'),
 				body('email').not().isEmpty().isString().withMessage('email is required!'),

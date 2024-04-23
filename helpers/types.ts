@@ -76,12 +76,18 @@ export enum typeEnum {
 	RESET = 'reset',
 	ADD_ACCOUNT = 'account',
 	TWOFA = '2fa',
+	VALIDATE = 'validate',
 }
 
 export type SendOtpDataType = {
 	email: string;
 	type: typeEnum;
 	password?: string;
+};
+
+export type SendOtpVerifyDataType = {
+	email: string;
+	type: typeEnum;
 };
 
 export type OtpMailTemplateDataType = {

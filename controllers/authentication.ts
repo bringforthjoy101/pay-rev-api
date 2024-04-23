@@ -11,7 +11,7 @@ import DB from './db';
 // Import function files
 import { handleResponse, successResponse, errorResponse, otpValidity } from '../helpers/utility';
 import { RegisterDataType, TokenDataType, typeEnum, VerifyOtpDataType, FnResponseDataType, ChangePasswordDataType, StaffRegisterDataType } from '../helpers/types';
-import { activateAccount, login, sendOtp } from '../helpers/auth';
+import { activateAccount, login, sendOtp, sendOtpVerify } from '../helpers/auth';
 import { checkBusiness } from '../helpers/middlewares';
 import { getAccountTemplateData, getOtpTemplateData } from '../helpers/mailer/templateData';
 import { prepareMail } from '../helpers/mailer/mailer';
@@ -262,6 +262,9 @@ export const verifyOtp = async (req: Request, res: Response) => {
 		} else if (type === typeEnum.RESET) {
 			if (decoded.password) return errorResponse(res, 'Suspicious attempt discovered! Pls reset password again');
 			return successResponse(res, 'OTP Matched', token);
+		} else if (type === typeEnum.VALIDATE) {
+			// if (decoded.password) return errorResponse(res, 'Suspicious attempt discovered! Pls reset password again');
+			return successResponse(res, 'OTP Matched', {status: true});
 		} else {
 			const accountActivated = await activateAccount(email);
 			if (!accountActivated.status) return errorResponse(res, accountActivated.message);
@@ -339,6 +342,25 @@ export const changeRole = async (req: Request, res: Response) => {
 		const updatedSettings: any = await staff.update(data);
 		if (!updatedSettings) return errorResponse(res, `Unable to change role!`);
 		return successResponse(res, `Role changed successfully`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occured - ${error}`);
+	}
+};
+
+export const sendUserOtp = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	console.log(req.staff)
+	const { id } = req.staff;
+
+	try {
+		const staff = await DB.staffs.findOne({ where: { id } });
+		if (!staff) return errorResponse(res, `Staff not found!`);
+		const otpRes = await sendOtpVerify({ email: staff.email, type: typeEnum.VERIFICATION });
+		return successResponse(res, `OTP sent successfully`, otpRes);
 	} catch (error) {
 		console.log(error);
 		return errorResponse(res, `An error occured - ${error}`);

@@ -440,7 +440,7 @@ const revalidatePayment = async (req: Request, res: Response) => {
 
 		if (!payment) return errorResponse(res, `Payment log with transRef ${id} not found!`);
 		const encondedRef = Buffer.from(payment.mda.dataValues.secretKey).toString('base64');
-
+		// console.log('revalidation response ', payment.mda.dataValues)
 		const fpResp = await fpAxios
 			.get(`/checkout/revalidate-payment/${id}`, {
 				headers: {
@@ -467,6 +467,7 @@ const revalidatePayment = async (req: Request, res: Response) => {
 
 		return successResponse(res, `Payment successfully logged`, updatedPayment);
 	} catch (error) {
+		// console.log('err ', error)
 		return errorResponse(res, `An error occured - ${error}`);
 	}
 };
