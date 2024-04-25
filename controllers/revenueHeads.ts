@@ -54,7 +54,7 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 			name,
 			amount,
 			status,
-			mdaId,
+			mda,
 			startdate,
 			enddate,
 			 } = req.query;
@@ -71,8 +71,8 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 			where.status = status;
 		}
 
-		if (mdaId){
-			where.mdaId = mdaId;
+		if (mda){
+			where.mdaId = mda;
 		}
 
 		if (startdate && enddate) {

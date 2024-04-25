@@ -113,8 +113,8 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			payeeEmail,
 			transRef,
 			amount,
-			mdaId,
-			revenueHeadId,
+			mda,
+			revenueHead,
 			startdate,
 			enddate,
 			customerPhone, 
@@ -148,12 +148,12 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			where.amount = amount;
 		}
 
-		if(mdaId) {
-			where.mdaId = mdaId;
+		if(mda) {
+			where.mdaId = mda;
 		}
 
-		if(revenueHeadId) {
-			where.revenueHeadId = revenueHeadId;
+		if(revenueHead) {
+			where.revenueHeadId = revenueHead;
 		}
 
 		if(startdate && enddate) {

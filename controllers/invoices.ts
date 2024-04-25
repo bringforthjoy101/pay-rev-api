@@ -45,7 +45,7 @@ const getInvoices = async (req: Request, res: Response) => {
 			page = 1, 
 			pageSize = '',
 			amount,
-			revenueHeadId,
+			revenueHead,
 			status,
 			invoiceId,
 			name,
@@ -60,8 +60,8 @@ const getInvoices = async (req: Request, res: Response) => {
 			where.amount = amount;
 		}
 
-		if (revenueHeadId) {
-			where.revenueHeadId = revenueHeadId;
+		if (revenueHead) {
+			where.revenueHeadId = revenueHead;
 		}
 
 		if (status) {
