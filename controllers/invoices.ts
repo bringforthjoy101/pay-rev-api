@@ -41,9 +41,55 @@ const createInvoice = async (req: Request, res: Response) => {
 
 const getInvoices = async (req: Request, res: Response) => {
 	try {
-		const { page = 1, pageSize = '' } = req.query;
+		const { 
+			page = 1, 
+			pageSize = '',
+			amount,
+			revenueHeadId,
+			status,
+			invoiceId,
+			name,
+			email,
+			startdate,
+			enddate,
+			 } = req.query;
 
 		const where: any = {};
+
+		if (amount) {
+			where.amount = amount;
+		}
+
+		if (revenueHeadId) {
+			where.revenueHeadId = revenueHeadId;
+		}
+
+		if (status) {
+			where.status = status;
+		}
+
+		if (invoiceId) {
+			where.invoiceId = invoiceId;
+		}
+
+		if (name) {
+			where.name = {
+				[Op.like]: `%${name}%`,
+			};
+		}
+
+		if (email) {
+			where.email = {
+				[Op.like]: `%${email}%`,
+			};
+		}
+
+		if(startdate && enddate) {
+			where.createdAt = {
+				[Op.between]: [startdate, enddate],
+			};	
+		}
+
 
 		if(!pageSize) {
 			const invoices  = await DB.invoices.findAll({

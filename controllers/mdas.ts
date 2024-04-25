@@ -49,7 +49,15 @@ const createMda = async (req: Request, res: Response) => {
 // get all mdas
 const getMdas = async (req: Request, res: Response) => {
 	try {
-		const { page = 1, pageSize = '10', searchByName } = req.query;
+		const { 
+			page = 1, 
+			pageSize = '10',
+			searchByName,
+			address,
+			status, 
+			startdate,
+			enddate,
+	} = req.query;
 
 		const where: any = {};
 		if (!req.params) {
@@ -60,6 +68,20 @@ const getMdas = async (req: Request, res: Response) => {
 			where.name = {
 				[Op.like]: `%${searchByName}%`,
 			};
+
+		if (address)
+			where.address = {
+				[Op.like]: `%${address}%`,
+			};
+
+		if (status)
+			where.status = status;
+
+		if (startdate && enddate) {
+			where.createdAt = {
+				[Op.between]: [startdate, enddate],
+			};
+		}
 
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 

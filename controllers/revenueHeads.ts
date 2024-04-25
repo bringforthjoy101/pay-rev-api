@@ -8,6 +8,7 @@ import DB from './db';
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { RevenueHeadDataType, IdsDataType } from '../helpers/types';
+import { Op } from 'sequelize';
 
 // create revenueHead
 const createRevenueHead = async (req: Request, res: Response) => {
@@ -47,7 +48,40 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 			where.status = 'active';
 		}
 
-		const { page = 1, pageSize = '10' } = req.query;
+		const { 
+			page = 1, 
+			pageSize = '10',
+			name,
+			amount,
+			status,
+			mdaId,
+			startdate,
+			enddate,
+			 } = req.query;
+
+		if (name){
+			where.name = { [Op.like]: `%${name}%` }
+		};
+
+		if (amount){
+			where.amount = amount;
+		}
+
+		if (status){
+			where.status = status;
+		}
+
+		if (mdaId){
+			where.mdaId = mdaId;
+		}
+
+		if (startdate && enddate) {
+			where.createdAt = {
+				[Op.between]: [startdate, enddate],
+			};
+		}
+
+
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
 		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({

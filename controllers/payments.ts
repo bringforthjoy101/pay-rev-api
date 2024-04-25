@@ -105,12 +105,63 @@ const logPayment = async (req: Request, res: Response) => {
 const getPaymentLogs = async (req: Request, res: Response) => {
 	try {
 
-		const { page = 1, pageSize = '' } = req.query;
+		const { 
+			page = 1, 
+			pageSize = '', 
+			status,
+			payeePhone,
+			payeeEmail,
+			transRef,
+			amount,
+			mdaId,
+			revenueHeadId,
+			startdate,
+			enddate,
+			customerPhone, 
+			 } = req.query;
 
 		const where: any = {};
 
 		if (req.staff) {
 			where.businessId = req.staff.businessId;
+		}
+
+		if(status) {
+			where.status = status;
+		}
+
+		if(payeePhone) {
+			where.payeePhone = payeePhone;
+		}
+
+		if(payeeEmail) {
+			where.payeeEmail = {
+				[Op.like]: `%${payeeEmail}%`,
+			};
+		}
+
+		if(transRef) {
+			where.transRef = transRef;
+		}
+
+		if(amount) {
+			where.amount = amount;
+		}
+
+		if(mdaId) {
+			where.mdaId = mdaId;
+		}
+
+		if(revenueHeadId) {
+			where.revenueHeadId = revenueHeadId;
+		}
+
+		if(startdate && enddate) {
+			where.createdAt = { [Op.between]: [startdate, enddate] };
+		}
+
+		if(customerPhone) {
+			where.customerPhone = customerPhone;
 		}
 
 		if(!pageSize) {
