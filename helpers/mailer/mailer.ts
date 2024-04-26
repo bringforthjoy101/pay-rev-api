@@ -6,6 +6,7 @@ import config from '../../config/configSetup';
 
 // Import function files
 import { SendMailDataType, PrepareMailDataType } from '../types';
+import axios from 'axios';
 
 export const sendMail = async ({ mailRecipients, mailSubject, mailBody, mailAttachments }: SendMailDataType) => {
 	try {
@@ -44,11 +45,50 @@ export const sendMail = async ({ mailRecipients, mailSubject, mailBody, mailAtta
 	}
 };
 
+export const sendMailVerification = async ({ mailRecipients, mailSubject, mailBody, mailAttachments }: SendMailDataType, otp: string) => {
+	try {
+		sgMail.setApiKey(config.SENDGRID_API_KEY);
+
+
+		const json_data = {
+            mailSubject: mailSubject,
+            recipients: [mailRecipients],
+            senderName: config.MAIL_FROM_NAME,
+            mailBody: {template: "verification", values: { otp }},
+        }
+
+		const response = await axios.post('https://mail-ses.fountainpay.ng/send-mail', json_data);
+
+		console.log('Email response ', response.data);
+		
+		return {
+			status: true,
+			message: `Email sent successfully to ${mailRecipients}`,
+		};
+	} catch (error) {
+		console.log(error);
+		return {
+			status: false,
+			message: `Email not sent ${error}`,
+			email: mailRecipients,
+		};
+	}
+};
+
 export const prepareMail = async ({ mailRecipients, mailSubject, mailBody }: PrepareMailDataType) => {
 	const _sendMail: any = await sendMail({
 		mailRecipients,
 		mailSubject,
 		mailBody,
 	});
+	return { status: _sendMail.status, message: _sendMail.message };
+};
+
+export const prepareMailVerification = async ({ mailRecipients, mailSubject, mailBody }: PrepareMailDataType, otp: string) => {
+	const _sendMail: any = await sendMailVerification({
+		mailRecipients,
+		mailSubject,
+		mailBody,
+	}, otp);
 	return { status: _sendMail.status, message: _sendMail.message };
 };

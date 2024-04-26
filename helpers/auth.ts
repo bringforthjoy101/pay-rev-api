@@ -10,7 +10,7 @@ import config from '../config/configSetup';
 import { SendOtpDataType, OtpDetailsDataType, LoginDataType, AuthPayloadDataType, TokenDataType, SendOtpVerifyDataType } from './types';
 import { generateOtp, addMinutesToDate, fnResponse } from './utility';
 import { getOtpTemplateData } from './mailer/templateData';
-import { prepareMail } from './mailer/mailer';
+import { prepareMail, prepareMailVerification } from './mailer/mailer';
 import { otpMailTemplate } from './mailer/template';
 
 export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
@@ -83,6 +83,46 @@ export const sendOtpVerify = async ({ email, type }: SendOtpVerifyDataType) => {
 			mailSubject,
 			mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
 		});
+
+		console.log(sendEmail);
+
+		if (sendEmail.status) return fnResponse({ status: true, message: 'OTP Sent', data: encoded });
+		return fnResponse({ status: false, message: 'OTP not sent' });
+	} catch (error: any) {
+		console.log(error);
+		return fnResponse({ status: false, message: `An error occured:- ${error}` });
+	}
+};
+
+export const sendOtpVerifyStaff = async ({ email, type }: SendOtpVerifyDataType) => {
+	try {
+		//Generate OTP
+		const otp: number = generateOtp(),
+			now: Date = new Date(),
+			expirationTime: Date = addMinutesToDate(now, 10);
+
+		const otpInstance = await DB.otp.create({ otp, expirationTime });
+
+		// Create details object containing the email and otp id
+		const otpDetails: OtpDetailsDataType = {
+			timestamp: now,
+			email,
+			success: true,
+			message: 'OTP sent to staff',
+			otpId: otpInstance.id,
+		};
+
+		// Encrypt the details object
+		const encoded: string = jwt.sign(JSON.stringify(otpDetails), config.JWTSECRET);
+
+		const { mailSubject, mailBody } = getOtpTemplateData({ otp, type });
+
+		// prepare and send mail
+		const sendEmail = await prepareMailVerification({
+			mailRecipients: email,
+			mailSubject,
+			mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
+		}, otp.toString());
 
 		console.log(sendEmail);
 

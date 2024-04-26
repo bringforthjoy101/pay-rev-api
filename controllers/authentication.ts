@@ -11,7 +11,7 @@ import DB from './db';
 // Import function files
 import { handleResponse, successResponse, errorResponse, otpValidity } from '../helpers/utility';
 import { RegisterDataType, TokenDataType, typeEnum, VerifyOtpDataType, FnResponseDataType, ChangePasswordDataType, StaffRegisterDataType } from '../helpers/types';
-import { activateAccount, login, sendOtp, sendOtpVerify } from '../helpers/auth';
+import { activateAccount, login, sendOtp, sendOtpVerify, sendOtpVerifyStaff } from '../helpers/auth';
 import { checkBusiness } from '../helpers/middlewares';
 import { getAccountTemplateData, getOtpTemplateData } from '../helpers/mailer/templateData';
 import { prepareMail } from '../helpers/mailer/mailer';
@@ -359,7 +359,7 @@ export const sendUserOtp = async (req: Request, res: Response) => {
 	try {
 		const staff = await DB.staffs.findOne({ where: { id } });
 		if (!staff) return errorResponse(res, `Staff not found!`);
-		const otpRes = await sendOtpVerify({ email: staff.email, type: typeEnum.VERIFICATION });
+		const otpRes = await sendOtpVerifyStaff({ email: staff.email, type: typeEnum.VERIFICATION });
 		return successResponse(res, `OTP sent successfully`, otpRes);
 	} catch (error) {
 		console.log(error);
