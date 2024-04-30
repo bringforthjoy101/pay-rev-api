@@ -44,9 +44,9 @@ const createRevenueHead = async (req: Request, res: Response) => {
 const getRevenueHeads = async (req: Request, res: Response) => {
 	try {
 		const where: any = {};
-		if (!req.params) {
-			where.status = 'active';
-		}
+		// if (!req.params) {
+		// 	where.status = 'active';
+		// }
 
 		const { 
 			page = 1, 

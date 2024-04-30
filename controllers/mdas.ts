@@ -60,9 +60,9 @@ const getMdas = async (req: Request, res: Response) => {
 	} = req.query;
 
 		const where: any = {};
-		if (!req.params) {
-			where.status = 'active';
-		}
+		// if (!req.params) {
+		// 	where.status = 'active';
+		// }
 
 		if (searchByName)
 			where.name = {

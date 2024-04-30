@@ -50,7 +50,7 @@ router.get('/business/delete/:id', isAdmin([AdminRoles.CONTROL]), validate('id')
 router.post('/business/create', isAdmin([AdminRoles.CONTROL]), business.createBusiness);
 router.post('/business/update/:id', isAdmin([AdminRoles.CONTROL]), business.updateBusiness);
 
-router.get('/mda/:status?', mda.getMdas);
+router.get('/mda', mda.getMdas);
 router.get('/mda/business/:id', mda.getMdaByBusiness);
 router.get('/mda/get-details/:id', validate('id'), mda.getMdaDetails);
 router.delete('/mda/:id', validate('id'), mda.deleteMda);
@@ -63,7 +63,7 @@ router.get('/category/delete/:id', validate('id'), category.getCategoryDetails);
 router.post('/category/create', category.createCategory);
 router.post('/category/update/:id', category.updateCategory);
 
-router.get('/revenue-head/:status?', revenueHead.getRevenueHeads);
+router.get('/revenue-head', revenueHead.getRevenueHeads);
 router.get('/revenue-head/get-details/:id', validate('id'), revenueHead.getRevenueHeadDetails);
 router.get('/revenue-head/:id', validate('id'), revenueHead.getRevenueHeadDetails);
 router.get('/revenue-head/mda/:id', validate('id'), revenueHead.getRevenueHeadByMda);
