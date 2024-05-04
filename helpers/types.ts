@@ -9,6 +9,7 @@ export type RegisterDataType = {
 	businessId?: string;
 	branchId?: string;
 	role?: string;
+	roleId?: string;
 };
 
 export type StaffRegisterDataType = {

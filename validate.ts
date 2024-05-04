@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, CustomSanitizer } from 'express-validator';
 
 const validate = (method: string): any => {
 	switch (method) {
@@ -99,6 +99,7 @@ const validate = (method: string): any => {
 				body('password').not().isEmpty().isString().withMessage('Password is required!'),
 				body('phone').not().isEmpty().isString().withMessage('Phone is required!'),
 				body('businessId').not().isEmpty().isString().withMessage('businessId is required!'),
+				body('roleId').notEmpty().isString().withMessage('role is required'),
 			];
 		}
 		case 'create-revenue-heads': {
@@ -132,10 +133,7 @@ const validate = (method: string): any => {
 			const validDir = ['profile', 'doc', 'business'];
 			return [
 				param('dir')
-					.custom((value) => {
-						console.log('dir', value);
-						return validDir.includes(value);
-					})
+					.custom((value) => !validDir.includes(value))
 					.withMessage(`Dir must contain ${validDir}`),
 			];
 		}

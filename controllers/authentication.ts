@@ -28,12 +28,13 @@ import { StaffSettings } from '../models/StaffSettings';
 import { Otp } from '../models/Otp';
 
 export const register = async (req: Request, res: Response) => {
+	console.log(req.staff);
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { names, phone, email, password, businessId } = req.body;
+	const { names, phone, email, password, businessId, roleId } = req.body;
 
 	const business = await checkBusiness(businessId);
 	if (!business.status) return errorResponse(res, 'Business Not found');
@@ -42,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
 	const salt: string = await bcrypt.genSalt(15);
 	const hashPassword: string = await bcrypt.hash(password, salt);
 
-	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId };
+	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId, roleId };
 
 	try {
 		const staffExists: any = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
@@ -53,7 +54,7 @@ export const register = async (req: Request, res: Response) => {
 		const staff: any = await Staffs.create(insertData);
 
 		if (staff) {
-			await StaffSettings.create({ staffId: staff.dataValues.id });
+			await StaffSettings.create({ staffId: staff.id });
 			// let payload: AuthPayloadDataType = {
 			// 	id: staff.id,
 			// 	names,
