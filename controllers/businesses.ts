@@ -2,13 +2,11 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-// Import db
-import DB from './db';
-
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { BusinessDataType, IdsDataType } from '../helpers/types';
 import { Op } from 'sequelize';
+import { Businesses } from '../models/Businesses';
 
 // create business
 const createBusiness = async (req: Request, res: Response) => {
@@ -20,21 +18,21 @@ const createBusiness = async (req: Request, res: Response) => {
 	const insertData: BusinessDataType = { name, address, phone, email, state, country };
 
 	try {
-		const businessExists: any = await DB.businesses.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const businessExists: any = await Businesses.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		// if business exists, stop the process and return a message
 		if (businessExists) return errorResponse(res, `business with name ${name} already exists`);
 
-		const business: any = await DB.businesses.create(insertData);
+		const business: any = await Businesses.create(insertData);
 
 		if (business) {
 			// await DB.Mdas.create({ name: 'Main Branch', address: business.address, state: business.state, businessId: business.id });
-			return successResponse(res, `Business creation successfull`);
+			return successResponse(res, `Business creation successful`);
 		}
-		return errorResponse(res, `An error occured`);
+		return errorResponse(res, `An error occurred`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -55,7 +53,7 @@ const getBusinesses = async (req: Request, res: Response) => {
 
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const { count, rows: businesses } = await DB.businesses.findAndCountAll({
+		const { count, rows: businesses } = await Businesses.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -66,7 +64,7 @@ const getBusinesses = async (req: Request, res: Response) => {
 		if (businesses) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
-			return successResponse(res, `${businesses.length} business${businesses.length > 1 ? 'es' : ''} retrived!`, {
+			return successResponse(res, `${businesses.length} business${businesses.length > 1 ? 'es' : ''} retrieved!`, {
 				totalPages,
 				currentPage: parseInt(page as string, 10),
 				data: businesses,
@@ -74,7 +72,7 @@ const getBusinesses = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -86,12 +84,12 @@ const getBusinessDetails = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const business = await DB.businesses.findOne({ where: { id } });
+		const business = await Businesses.findOne({ where: { id } });
 		if (!business) return errorResponse(res, `Address with ID ${id} not found!`);
-		return successResponse(res, `Address details retrived!`, business);
+		return successResponse(res, `Address details retrieved!`, business);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -104,7 +102,7 @@ const updateBusiness = async (req: Request, res: Response) => {
 	const { id } = req.params;
 	const { name, address, phone, email, state, country, status } = req.body;
 	try {
-		const business = await DB.businesses.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const business = await Businesses.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!business) return errorResponse(res, `business not found!`);
 		const updateData = {
 			name: name || business.name,
@@ -120,7 +118,7 @@ const updateBusiness = async (req: Request, res: Response) => {
 		return successResponse(res, `Business updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -132,13 +130,13 @@ const deleteBusiness = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const checkBusiness = await DB.businesses.findOne({ where: { id } });
+		const checkBusiness = await Businesses.findOne({ where: { id } });
 		if (!checkBusiness) return errorResponse(res, `Business with ID ${id} not found!`);
 		await checkBusiness.destroy({ force: true });
 		return successResponse(res, `Business with ID ${id} deleted successfully!`);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -153,7 +151,7 @@ const deleteMultipleBusinesses = async (req: Request, res: Response) => {
 		let errorArr = [];
 		let successArr = [];
 		for (let i = 0; i < ids.length; i++) {
-			const checkBusiness = await DB.addresses.findOne({
+			const checkBusiness = await Businesses.findOne({
 				where: { id: ids[i] },
 			});
 			if (checkBusiness) {
@@ -173,7 +171,7 @@ const deleteMultipleBusinesses = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 

@@ -6,12 +6,12 @@ import bcrypt from 'bcryptjs';
 
 // Import db & configs
 import config from '../config/configSetup';
-import DB from './db';
 
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { RegisterDataType, AuthPayloadDataType, TokenDataType, typeEnum, FnResponseDataType, ChangePasswordDataType } from '../helpers/types';
 import { sendOtp } from '../helpers/auth';
+import { Admins } from '../models/Admins';
 
 // register or create admin
 const register = async (req: Request, res: Response) => {
@@ -29,18 +29,18 @@ const register = async (req: Request, res: Response) => {
 	let insertData: RegisterDataType = { names, phone, email, role, password: hashPassword };
 
 	try {
-		const adminExists: any = await DB.admins.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const adminExists: any = await Admins.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		// if admin exists, stop the process and return a message
 		if (adminExists) return errorResponse(res, `admin with email ${email} already exists`);
 
-		const admin: any = await DB.admins.create(insertData);
+		const admin: any = await Admins.create(insertData);
 
-		if (admin) return successResponse(res, `Registration successfull`);
-		return errorResponse(res, `An error occured`);
+		if (admin) return successResponse(res, `Registration successful`);
+		return errorResponse(res, `An error occurred`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -54,7 +54,7 @@ const login = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 
 	try {
-		const admin = await DB.admins.findOne({
+		const admin = await Admins.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
@@ -77,13 +77,13 @@ const login = async (req: Request, res: Response) => {
 			};
 			const token: string = jwt.sign(payload, config.JWTSECRET);
 			const data: TokenDataType = { type: 'token', token, admin: payload };
-			return successResponse(res, 'Login successfull', data);
+			return successResponse(res, 'Login successful', data);
 		} else {
 			return handleResponse(res, 401, false, `Incorrect Email`);
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -96,7 +96,7 @@ const updatePassword = async (req: Request, res: Response) => {
 
 	const { email, oldPassword, newPassword } = req.body;
 	try {
-		const admin = await DB.admins.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const admin = await Admins.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!admin) return errorResponse(res, `admin not found!`);
 		const validPassword: boolean = await bcrypt.compareSync(oldPassword, admin.password);
 		if (!validPassword) return errorResponse(res, `Incorrect old password!`);
@@ -107,7 +107,7 @@ const updatePassword = async (req: Request, res: Response) => {
 		return successResponse(res, `Password updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -119,7 +119,7 @@ const resetPassword = async (req: Request, res: Response) => {
 	}
 	const { email } = req.body;
 	try {
-		const admin = await DB.admins.findOne({
+		const admin = await Admins.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
@@ -132,7 +132,7 @@ const resetPassword = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -148,7 +148,7 @@ const changePassword = async (req: Request, res: Response) => {
 		const decoded: any = jwt.verify(token, config.JWTSECRET);
 		if (!decoded) return errorResponse(res, `Invalid verification`);
 
-		const admin = await DB.admins.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const admin = await Admins.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!admin) return errorResponse(res, `Account Suspended!, Please contact support!`);
 		const salt: string = await bcrypt.genSalt(15);
 		const hashPassword: string = await bcrypt.hash(password, salt);
@@ -157,7 +157,7 @@ const changePassword = async (req: Request, res: Response) => {
 		return successResponse(res, `Password changed successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 

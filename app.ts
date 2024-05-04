@@ -4,9 +4,11 @@ import morgan from 'morgan';
 import routes from './routes';
 import config from './config/configSetup';
 import { isAuthorized } from './helpers/middlewares';
+import { initDB } from './controllers/db';
 
 const app: Application = express();
 
+app.set('trust proxy', true);
 app.use(morgan('dev'));
 
 // PARSE JSON
@@ -15,10 +17,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // ENABLE CORS AND START SERVER
 app.use(cors({ origin: true }));
+initDB();
 app.listen(config.PORT, () => {
+	console.log(config.NODE_ENV);
 	console.log(`Server started on port ${config.PORT}`);
 });
 
 // Routes
-// app.all('*', isAuthorized);
+app.all('*', isAuthorized);
 app.use(routes);

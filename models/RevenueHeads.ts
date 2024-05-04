@@ -2,51 +2,47 @@
 REVENUE HEADS TABLE
 *************************************************************************/
 
-import { DataTypes } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+import { Invoices } from './Invoice';
+import { Mdas } from './Mdas';
 
-export default function (sequelize: any, Sequelize: any) {
-	var RevenueHeads = sequelize.define(
-		'revenueHeads',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			name: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			amount: {
-				type: Sequelize.DOUBLE,
-				defaultValue: 0.0,
-			},
-			amountEditable: {
-				type: Sequelize.BOOLEAN,
-				defaultValue: false,
-			},
-			status: {
-				type: Sequelize.ENUM('active', 'inactive'),
-				defaultValue: 'inactive',
-			},
-			mdaId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'mdas',
-					key: 'id',
-				},
-			},
-		},
-		{
-			freezeTableName: true,
-		}
-	);
+export enum RevenueStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+}
+@Table({ timestamps: true, tableName: 'revenueHeads' })
+export class RevenueHeads extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	RevenueHeads.associate = function (models: any) {
-		models.revenueHeads.belongsTo(models.mdas, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'mdaId' });
-		models.revenueHeads.hasMany(models.invoices, { onDelete: 'cascade' });
-	};
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	name!: string;
 
-	return RevenueHeads;
+	@Default(0.0)
+	@Column(DataType.DOUBLE)
+	amount!: number;
+
+	@Default(false)
+	@Column(DataType.BOOLEAN)
+	amountEditable!: boolean;
+
+	@Default(RevenueStatus.INACTIVE)
+	@Column(DataType.ENUM(RevenueStatus.INACTIVE, RevenueStatus.ACTIVE))
+	status!: RevenueStatus;
+
+	@ForeignKey(() => Mdas)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	mdaId!: string;
+
+	@BelongsTo(() => Mdas, { onDelete: 'CASCADE' })
+	business!: Mdas;
+
+	@HasMany(() => Invoices, { onDelete: 'CASCADE' })
+	invoices!: Invoices[];
 }

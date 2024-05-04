@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 // Import DB and configs
-import DB from '../controllers/db';
 import config from '../config/configSetup';
 
 // Import types & function files
@@ -12,6 +11,8 @@ import { generateOtp, addMinutesToDate, fnResponse } from './utility';
 import { getOtpTemplateData } from './mailer/templateData';
 import { prepareMail, prepareMailVerification } from './mailer/mailer';
 import { otpMailTemplate } from './mailer/template';
+import { Otp } from '../models/Otp';
+import { Staffs } from '../models/Staffs';
 
 export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 	try {
@@ -20,7 +21,7 @@ export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 			now: Date = new Date(),
 			expirationTime: Date = addMinutesToDate(now, 10);
 
-		const otpInstance = await DB.otp.create({ otp, expirationTime });
+		const otpInstance = await Otp.create({ otp, expirationTime });
 
 		// Create details object containing the email and otp id
 		const otpDetails: OtpDetailsDataType = {
@@ -50,7 +51,7 @@ export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 		return fnResponse({ status: false, message: 'OTP not sent' });
 	} catch (error: any) {
 		console.log(error);
-		return fnResponse({ status: false, message: `An error occured:- ${error}` });
+		return fnResponse({ status: false, message: `An error occurred:- ${error}` });
 	}
 };
 
@@ -61,7 +62,7 @@ export const sendOtpVerify = async ({ email, type }: SendOtpVerifyDataType) => {
 			now: Date = new Date(),
 			expirationTime: Date = addMinutesToDate(now, 10);
 
-		const otpInstance = await DB.otp.create({ otp, expirationTime });
+		const otpInstance = await Otp.create({ otp, expirationTime });
 
 		// Create details object containing the email and otp id
 		const otpDetails: OtpDetailsDataType = {
@@ -90,7 +91,7 @@ export const sendOtpVerify = async ({ email, type }: SendOtpVerifyDataType) => {
 		return fnResponse({ status: false, message: 'OTP not sent' });
 	} catch (error: any) {
 		console.log(error);
-		return fnResponse({ status: false, message: `An error occured:- ${error}` });
+		return fnResponse({ status: false, message: `An error occurred:- ${error}` });
 	}
 };
 
@@ -101,7 +102,7 @@ export const sendOtpVerifyStaff = async ({ email, type }: SendOtpVerifyDataType)
 			now: Date = new Date(),
 			expirationTime: Date = addMinutesToDate(now, 10);
 
-		const otpInstance = await DB.otp.create({ otp, expirationTime });
+		const otpInstance = await Otp.create({ otp, expirationTime });
 
 		// Create details object containing the email and otp id
 		const otpDetails: OtpDetailsDataType = {
@@ -118,11 +119,14 @@ export const sendOtpVerifyStaff = async ({ email, type }: SendOtpVerifyDataType)
 		const { mailSubject, mailBody } = getOtpTemplateData({ otp, type });
 
 		// prepare and send mail
-		const sendEmail = await prepareMailVerification({
-			mailRecipients: email,
-			mailSubject,
-			mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
-		}, otp.toString());
+		const sendEmail = await prepareMailVerification(
+			{
+				mailRecipients: email,
+				mailSubject,
+				mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
+			},
+			otp.toString()
+		);
 
 		console.log(sendEmail);
 
@@ -130,13 +134,13 @@ export const sendOtpVerifyStaff = async ({ email, type }: SendOtpVerifyDataType)
 		return fnResponse({ status: false, message: 'OTP not sent' });
 	} catch (error: any) {
 		console.log(error);
-		return fnResponse({ status: false, message: `An error occured:- ${error}` });
+		return fnResponse({ status: false, message: `An error occurred:- ${error}` });
 	}
 };
 
 export const login = async ({ email, password }: LoginDataType) => {
 	try {
-		const staff = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staff = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		if (staff) {
 			const validPass: boolean = bcrypt.compareSync(password, staff.password);
@@ -157,23 +161,23 @@ export const login = async ({ email, password }: LoginDataType) => {
 			};
 			const token: string = jwt.sign(payload, config.JWTSECRET);
 			const data: TokenDataType = { type: 'token', token, staff: payload };
-			return fnResponse({ status: true, message: 'Login successfull', data });
+			return fnResponse({ status: true, message: 'Login successful', data });
 		} else {
 			return fnResponse({ status: false, message: 'Incorrect Email' });
 		}
 	} catch (error) {
 		console.log(error);
-		return fnResponse({ status: false, message: `An error occured - ${error}` });
+		return fnResponse({ status: false, message: `An error occurred - ${error}` });
 	}
 };
 
 export const activateAccount = async (email: string) => {
 	try {
-		const staff = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
-		staff.update({ status: 'active' });
+		const staff = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		staff?.update({ status: 'active' });
 		return fnResponse({ status: true, message: 'User Activated' });
 	} catch (error) {
 		console.log(error);
-		return fnResponse({ status: false, message: `An error occured - ${error}` });
+		return fnResponse({ status: false, message: `An error occurred - ${error}` });
 	}
 };

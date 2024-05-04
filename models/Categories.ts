@@ -2,34 +2,36 @@
 CATEGORIES TABLE
 *************************************************************************/
 
-import { DataTypes } from "sequelize";
+import { DataTypes } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Businesses } from './Businesses';
 
-export default function (sequelize: any, Sequelize: any) {
-	var Categories = sequelize.define(
-		'categories',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			name: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			status: {
-				type: Sequelize.ENUM('active', 'inactive'),
-				defaultValue: 'inactive',
-			},
-		},
-		{
-			freezeTableName: true,
-		}
-	);
+export enum CategoryStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+}
+@Table({ timestamps: true, tableName: 'categories' })
+export class Categories extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	Categories.associate = function (models: any) {
-		models.categories.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-	};
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	name!: string;
 
-	return Categories;
+	@Default(CategoryStatus.INACTIVE)
+	@Column(DataType.ENUM(CategoryStatus.ACTIVE, CategoryStatus.INACTIVE))
+	status!: CategoryStatus;
+
+	@ForeignKey(() => Businesses)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	businessId!: number;
+
+	@BelongsTo(() => Businesses, { onDelete: 'CASCADE' })
+	business!: Businesses;
 }

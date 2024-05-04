@@ -2,89 +2,70 @@
 USERS TABLE
 *************************************************************************/
 
-import { DataTypes } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasOne, Model, Table } from 'sequelize-typescript';
+import { Roles } from './Role';
+import { Businesses } from './Businesses';
+import { StaffSettings } from './StaffSettings';
 
-export default function (sequelize: any, Sequelize: any) {
-	var Staffs = sequelize.define(
-		'staffs',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			names: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			email: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			password: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			phone: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			imageUrl: {
-				type: Sequelize.STRING,
-				allowNull: true,
-			},
-			// role: {
-			// 	type: Sequelize.ENUM('field', 'admin'),
-			// 	defaultValue: 'admin',
-			// },
-			status: {
-				type: Sequelize.ENUM('active', 'inactive'),
-				defaultValue: 'active',
-			},
-			businessId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'businesses',
-					key: 'id',
-				},
-			},
-			roleId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'roles',
-					key: 'id',
-				},
-			},
-			mdas: {
-				type: Sequelize.JSON,
-				allowNull: true,
-			},
-			// branchId: {
-			// 	type: Sequelize.UUID,
-			// 	allowNull: false,
-			// 	references: {
-			// 		model: 'branches',
-			// 		key: 'id',
-			// 	},
-			// },
-			verifiedAt: Sequelize.DATE,
-		},
-		{
-			freezeTableName: true,
-			indexes: [
-				{ unique: true, fields: ['email'] },
-				{ unique: true, fields: ['phone'] },
-			],
-		}
-	);
+export enum StaffStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+}
 
-	Staffs.associate = function (models: any) {
-		models.staffs.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-		models.staffs.hasOne(models.staffSettings, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
-		models.staffs.belongsTo(models.roles, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
-	};
+@Table({ timestamps: true, tableName: 'staffs' })
+export class Staffs extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	return Staffs;
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	names!: string;
+
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	email!: string;
+
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	password!: string;
+
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	phone!: string;
+
+	@Column(DataType.STRING)
+	imageUrl!: string;
+
+	@Column(DataType.JSON)
+	mdas: any;
+
+	@Default(StaffStatus.INACTIVE)
+	@Column(DataType.ENUM(StaffStatus.INACTIVE, StaffStatus.ACTIVE))
+	status!: StaffStatus;
+
+	@Column(DataType.DATE)
+	verifiedAt?: Date;
+
+	@ForeignKey(() => Businesses)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	businessId!: string;
+
+	@ForeignKey(() => Roles)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	roleId!: string;
+
+	@BelongsTo(() => Businesses, { onDelete: 'CASCADE' })
+	business!: Businesses;
+
+	@BelongsTo(() => Roles, { onDelete: 'CASCADE' })
+	role!: Roles;
+
+	@HasOne(() => StaffSettings, { onDelete: 'CASCADE' })
+	staffSetting!: Roles;
 }

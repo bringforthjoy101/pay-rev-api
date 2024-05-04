@@ -2,53 +2,50 @@
 ADMINS TABLE
 *************************************************************************/
 
-import { DataTypes } from 'sequelize';
+import { AllowNull, Column, DataType, Default, Index, Model, Table } from 'sequelize-typescript';
 
-export default (sequelize: any, Sequelize: any) => {
-	var Admins = sequelize.define(
-		'admins',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			names: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			email: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			password: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			phone: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			role: {
-				type: Sequelize.ENUM('support', 'control'),
-				defaultValue: 'support',
-			},
-			status: {
-				type: Sequelize.ENUM('active', 'inactive', 'suspended'),
-				defaultValue: 'inactive',
-			},
-			lastLogin: Sequelize.DATE,
-		},
-		{
-			freezeTableName: true,
-			indexes: [
-				{ unique: true, fields: ['email'] },
-				{ unique: true, fields: ['phone'] },
-			],
-		}
-	);
+export enum AdminRoles {
+	SUPPORT = 'support',
+	CONTROL = 'control',
+}
+export enum AdminStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+	SUSPENDED = 'suspended',
+}
 
-	Admins.associate = (models: any) => {};
+@Table({ timestamps: true, tableName: 'admins' })
+export class Admins extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	return Admins;
-};
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	names!: string;
+
+	@Index({ name: 'admin-email-index', type: 'UNIQUE', unique: true })
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	email!: string;
+
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	password!: string;
+
+	@Index({ name: 'admin-phone-index', type: 'UNIQUE', unique: true })
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	phone!: string;
+
+	@Default(AdminRoles.SUPPORT)
+	@Column(DataType.ENUM(AdminRoles.SUPPORT, AdminRoles.CONTROL))
+	role!: AdminRoles;
+
+	@Default(AdminStatus.INACTIVE)
+	@Column(DataType.ENUM(AdminStatus.ACTIVE, AdminStatus.INACTIVE, AdminStatus.SUSPENDED))
+	status!: AdminStatus;
+}

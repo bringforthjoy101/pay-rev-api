@@ -1,21 +1,31 @@
 // Import packages
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 // Import db & configs
 import config from '../config/configSetup';
-import DB from './db';
 
 // Import function files
 import { handleResponse, successResponse, errorResponse, otpValidity } from '../helpers/utility';
-import { RegisterDataType, TokenDataType, typeEnum, VerifyOtpDataType, FnResponseDataType, ChangePasswordDataType, StaffRegisterDataType } from '../helpers/types';
-import { activateAccount, login, sendOtp, sendOtpVerify, sendOtpVerifyStaff } from '../helpers/auth';
+import {
+	RegisterDataType,
+	TokenDataType,
+	typeEnum,
+	VerifyOtpDataType,
+	FnResponseDataType,
+	ChangePasswordDataType,
+	StaffRegisterDataType,
+} from '../helpers/types';
+import { activateAccount, login, sendOtp, sendOtpVerifyStaff } from '../helpers/auth';
 import { checkBusiness } from '../helpers/middlewares';
-import { getAccountTemplateData, getOtpTemplateData } from '../helpers/mailer/templateData';
+import { getAccountTemplateData } from '../helpers/mailer/templateData';
 import { prepareMail } from '../helpers/mailer/mailer';
 import { otpMailTemplate } from '../helpers/mailer/template';
+import { Staffs } from '../models/Staffs';
+import { StaffSettings } from '../models/StaffSettings';
+import { Otp } from '../models/Otp';
 
 export const register = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
@@ -35,15 +45,15 @@ export const register = async (req: Request, res: Response) => {
 	let insertData: RegisterDataType = { names, phone, email, password: hashPassword, businessId };
 
 	try {
-		const staffExists: any = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staffExists: any = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		// if staff exists, stop the process and return a message
 		if (staffExists) return handleResponse(res, 400, false, `staff with email ${email} already exists`);
 
-		const staff: any = await DB.staffs.create(insertData);
+		const staff: any = await Staffs.create(insertData);
 
 		if (staff) {
-			await DB.staffSettings.create({ staffId: staff.dataValues.id });
+			await StaffSettings.create({ staffId: staff.dataValues.id });
 			// let payload: AuthPayloadDataType = {
 			// 	id: staff.id,
 			// 	names,
@@ -69,7 +79,7 @@ export const addAccount = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { names, phone, email, businessId, roleId, mdas, } = req.body;
+	const { names, phone, email, businessId, roleId, mdas } = req.body;
 
 	const business = await checkBusiness(businessId);
 	if (!business.status) return errorResponse(res, 'Business Not found');
@@ -79,18 +89,18 @@ export const addAccount = async (req: Request, res: Response) => {
 	const salt: string = await bcrypt.genSalt(15);
 	const hashPassword: string = await bcrypt.hash(password, salt);
 
-	let insertData: StaffRegisterDataType = { names, phone, email, password: hashPassword, businessId, roleId, mdas, };
+	let insertData: StaffRegisterDataType = { names, phone, email, password: hashPassword, businessId, roleId, mdas };
 
 	try {
-		const staffExists: any = await DB.staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staffExists: any = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		// if staff exists, stop the process and return a message
 		if (staffExists) return handleResponse(res, 400, false, `staff with email ${email} already exists`);
 
-		const staff: any = await DB.staffs.create(insertData);
+		const staff: any = await Staffs.create(insertData);
 
 		if (staff) {
-			await DB.staffSettings.create({ staffId: staff.dataValues.id });
+			await StaffSettings.create({ staffId: staff.dataValues.id });
 
 			const emailBody = `
 			Dear ${names},
@@ -105,20 +115,20 @@ export const addAccount = async (req: Request, res: Response) => {
 		  `;
 			const { mailSubject, mailBody } = getAccountTemplateData(emailBody);
 
-		// prepare and send mail
-		const sendEmail = await prepareMail({
-			mailRecipients: email,
-			mailSubject,
-			mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
-		});
-		console.log('mail sent', sendEmail);
+			// prepare and send mail
+			const sendEmail = await prepareMail({
+				mailRecipients: email,
+				mailSubject,
+				mailBody: otpMailTemplate({ subject: mailSubject, body: mailBody }),
+			});
+			console.log('mail sent', sendEmail);
 			return handleResponse(res, 200, true, `Registration successful`);
 		} else {
 			return handleResponse(res, 401, false, `An error occurred`);
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -131,10 +141,10 @@ export const preLogin = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 
 	try {
-		const staff = await DB.staffs.findOne({
+		const staff = await Staffs.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
-			include: { model: DB.staffSettings, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+			include: { model: StaffSettings, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 		});
 
 		if (staff) {
@@ -154,7 +164,7 @@ export const preLogin = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -166,7 +176,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 
 	const { email, oldPassword, newPassword } = req.body;
 	try {
-		const staff = await DB.staffs.findOne({ where: { email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staff = await Staffs.findOne({ where: { email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!staff) return errorResponse(res, `staff not found!`);
 		const validPassword: boolean = await bcrypt.compareSync(oldPassword, staff.password);
 		if (!validPassword) return errorResponse(res, `Incorrect  old password!`);
@@ -177,7 +187,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 		return successResponse(res, `Password updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -190,7 +200,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 	const { email } = req.body;
 
 	try {
-		const staff = await DB.staffs.findOne({
+		const staff = await Staffs.findOne({
 			where: { email },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
@@ -204,7 +214,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -219,7 +229,7 @@ export const changePassword = async (req: Request, res: Response) => {
 		const decoded: any = jwt.verify(token, config.JWTSECRET);
 		if (!decoded) return errorResponse(res, `Invalid verification`);
 
-		const staff = await DB.staffs.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staff = await Staffs.findOne({ where: { email: decoded.email, status: 'active' }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!staff) return errorResponse(res, `Account Suspended!, Please contact support!`);
 		const salt: string = await bcrypt.genSalt(15);
 		const hashPassword: string = await bcrypt.hash(password, salt);
@@ -228,7 +238,7 @@ export const changePassword = async (req: Request, res: Response) => {
 		return successResponse(res, `Password changed successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -245,12 +255,12 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
 		if (decoded.email != email) return errorResponse(res, `OTP was not sent to this particular email`);
 
-		const otpInstance = await DB.otp.findOne({ where: { id: decoded.otpId } });
+		const otpInstance = await Otp.findOne({ where: { id: decoded.otpId } });
 
 		if (!otpInstance) return errorResponse(res, `OTP does not exists`);
 		if (otpInstance.verified) return errorResponse(res, `OTP Already Used`);
 		if (!otpValidity(otpInstance.expirationTime, currentdate)) return errorResponse(res, 'OTP Expired');
-		if (otp != otpInstance.otp) return errorResponse(res, 'OTP NOT Matched');
+		if (otp !== otpInstance.otp) return errorResponse(res, 'OTP NOT Matched');
 
 		const updateData = { verified: true, verifiedAt: currentdate };
 		await otpInstance.update(updateData);
@@ -264,7 +274,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
 			return successResponse(res, 'OTP Matched', token);
 		} else if (type === typeEnum.VALIDATE) {
 			// if (decoded.password) return errorResponse(res, 'Suspicious attempt discovered! Pls reset password again');
-			return successResponse(res, 'OTP Matched', {status: true});
+			return successResponse(res, 'OTP Matched', { status: true });
 		} else {
 			const accountActivated = await activateAccount(email);
 			if (!accountActivated.status) return errorResponse(res, accountActivated.message);
@@ -272,7 +282,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -285,13 +295,13 @@ export const updateUserSettings = async (req: Request, res: Response) => {
 	const { id } = req.staff;
 
 	try {
-		const staff = await DB.staffs.findOne({ where: { id } });
-		const updatedSettings: any = await staff.update({ twoFa });
+		const staff = await Staffs.findOne({ where: { id } });
+		const updatedSettings: any = await staff?.update({ twoFa });
 		if (!updatedSettings) return errorResponse(res, `Unable update settings!`);
 		return successResponse(res, `Settings updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -300,27 +310,26 @@ export const updateProfileSettings = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, phone, mdas, } = req.body;
+	const { names, email, phone, mdas } = req.body;
 	const { id } = req.staff;
 
 	try {
+		const profilePixUrl = '';
 
-		const profilePixUrl = "";
-		
 		const data = {
 			names,
 			email,
 			phone,
 			profilePixUrl,
-			mdas
-		}
-		const staff = await DB.staffs.findOne({ where: { id } });
-		const updatedSettings: any = await staff.update(data);
+			mdas,
+		};
+		const staff = await Staffs.findOne({ where: { id } });
+		const updatedSettings: any = await staff?.update(data);
 		if (!updatedSettings) return errorResponse(res, `Unable update profile settings!`);
 		return successResponse(res, `Profile settings updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -329,22 +338,21 @@ export const changeRole = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, roleId, } = req.body;
+	const { names, email, roleId } = req.body;
 
 	try {
-		
 		const data = {
 			names,
 			email,
 			roleId,
-		}
-		const staff = await DB.staffs.findOne({ where: { email } });
-		const updatedSettings: any = await staff.update(data);
+		};
+		const staff = await Staffs.findOne({ where: { email } });
+		const updatedSettings: any = await staff?.update(data);
 		if (!updatedSettings) return errorResponse(res, `Unable to change role!`);
 		return successResponse(res, `Role changed successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -353,16 +361,33 @@ export const sendUserOtp = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	console.log(req.staff)
+	console.log(req.staff);
 	const { id } = req.staff;
 
 	try {
-		const staff = await DB.staffs.findOne({ where: { id } });
+		const staff = await Staffs.findOne({ where: { id } });
 		if (!staff) return errorResponse(res, `Staff not found!`);
 		const otpRes = await sendOtpVerifyStaff({ email: staff.email, type: typeEnum.VERIFICATION });
 		return successResponse(res, `OTP sent successfully`, otpRes);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
+	}
+};
+
+export const uploadProfile = async (req: any, res: Response) => {
+	try {
+		const { file } = req;
+		if (!file) return errorResponse(res, 'Pls Upload a file!');
+		// console.log(file);
+		const data = {
+			fileName: file.originalname,
+			url: file.location,
+		};
+		await Staffs.update({ imageUrl: file.location }, { where: { id: req.staff.id } });
+		return successResponse(res, `Profile uploaded successfully!`, data);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };

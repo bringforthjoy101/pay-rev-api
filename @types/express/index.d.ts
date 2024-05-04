@@ -1,3 +1,5 @@
+import { File } from 'buffer';
+
 export {};
 
 declare global {
@@ -5,6 +7,7 @@ declare global {
 		interface Request {
 			staff?: any;
 			admin?: any;
+			query?: any;
 		}
 	}
 	namespace NodeJS {
@@ -29,6 +32,11 @@ declare global {
 			PAYMENT_AUTH: string;
 			PAYMENT_BASE_URL: string;
 			PUBLIC_ROUTES: string;
+			AWS_SECRETKEY: string;
+			AWS_ACCESSKEY: string;
+			AWS_BUCKETNAME: string;
+			AWS_ACL: string;
+			AWS_REGION: string;
 		}
 	}
 }

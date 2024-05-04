@@ -3,56 +3,55 @@ BRANCHES TABLE
 *************************************************************************/
 
 import { DataTypes } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasMany, Model, Scopes, Table } from 'sequelize-typescript';
+import { Businesses } from './Businesses';
+import { RevenueHeads } from './RevenueHeads';
 
-export default function (sequelize: any, Sequelize: any) {
-	var Mdas = sequelize.define(
-		'mdas',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			name: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			address: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			status: {
-				type: Sequelize.ENUM('active', 'inactive'),
-				defaultValue: 'inactive',
-			},
-			publicKey: { type: Sequelize.STRING },
-			secretKey: { type: Sequelize.STRING },
-			businessId: {
-				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: 'businesses',
-					key: 'id',
-				},
-			},
-		},
-		{
-			freezeTableName: true,
-			defaultScope: {
-				attributes: { exclude: ['secretKey'] },
-			},
-			scopes: {
-				withSecretKey: {
-					attributes: { include: ['secretKey'] },
-				},
-			},
-		}
-	);
+export enum MdaStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+}
 
-	Mdas.associate = function (models: any) {
-		models.mdas.hasMany(models.revenueHeads, { onDelete: 'cascade', foreignKey: 'mdaId' });
-		models.mdas.belongsTo(models.businesses, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'businessId' });
-	};
+@Scopes(() => ({
+	withSecretKey: {
+		include: ['secretKey'],
+	},
+}))
+@Table({ timestamps: true, tableName: 'mdas' })
+export class Mdas extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	return Mdas;
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	name!: string;
+
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	address!: string;
+
+	@Column(DataType.STRING)
+	publicKey!: string;
+
+	@Column(DataType.STRING)
+	secretKey!: string;
+
+	@Default(MdaStatus.INACTIVE)
+	@Column(DataType.ENUM(MdaStatus.INACTIVE, MdaStatus.ACTIVE))
+	status!: MdaStatus;
+
+	@ForeignKey(() => Businesses)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	businessId!: string;
+
+	@BelongsTo(() => Businesses, { onDelete: 'CASCADE' })
+	business!: Businesses;
+
+	@HasMany(() => RevenueHeads, { onDelete: 'CASCADE' })
+	revenueHeads!: RevenueHeads[];
 }

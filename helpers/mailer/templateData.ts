@@ -1,5 +1,5 @@
-import moment from 'moment';
 // Import types
+import moment from 'moment';
 import { GetOtpTemplateDataType, PaymentNotifTemplateDataType, typeEnum, payEnum } from '../types';
 import { formatCurrency } from '../utility';
 
@@ -22,7 +22,7 @@ export const getOtpTemplateData = ({ otp, type }: GetOtpTemplateDataType) => {
 				<p>This Otp is valid for only 10 minutes</p>
 			`,
 		};
-	}  else if (type === typeEnum.ADD_ACCOUNT) {
+	} else if (type === typeEnum.ADD_ACCOUNT) {
 		return {
 			mailSubject: 'Your New Account Details',
 			mailBody: `${otp}`,
@@ -44,7 +44,7 @@ export const getAccountTemplateData = (body: string) => {
 		mailSubject: 'Your New Account Details',
 		mailBody: `${body}`,
 	};
-}
+};
 
 export const paymentNotifTemplateData = ({ party, paymentData }: PaymentNotifTemplateDataType) => {
 	const { phone, amount, date, business } = paymentData;

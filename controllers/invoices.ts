@@ -1,8 +1,10 @@
 import { validationResult } from 'express-validator';
 import { errorResponse, handleResponse, randId, successResponse } from '../helpers/utility';
 import { Request, Response } from 'express';
-import DB from './db';
 import { Op } from 'sequelize';
+import { RevenueHeads } from '../models/RevenueHeads';
+import { InvoiceStatus, Invoices } from '../models/Invoice';
+import { Mdas } from '../models/Mdas';
 
 const createInvoice = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
@@ -10,10 +12,10 @@ const createInvoice = async (req: Request, res: Response) => {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
 
-	const { amount, revenueHeadId, status, email, name, } = req.body;
+	const { amount, revenueHeadId, status, email, name } = req.body;
 
 	try {
-		const revenueHead = await DB.revenueHeads.findOne({ where: { id: revenueHeadId } });
+		const revenueHead = await RevenueHeads.findOne({ where: { id: revenueHeadId } });
 		if (!revenueHead) return successResponse(res, `No revenue head available!`);
 
 		const invoiceId = randId();
@@ -27,72 +29,35 @@ const createInvoice = async (req: Request, res: Response) => {
 			name,
 		};
 
-		const invoice: any = await DB.invoices.create(insertData);
+		const invoice: any = await Invoices.create(insertData);
 
 		if (invoice) {
 			return successResponse(res, `Invoice creation successful`);
 		}
-		return errorResponse(res, `An error occured`);
+		return errorResponse(res, `An error occurred`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
 const getInvoices = async (req: Request, res: Response) => {
 	try {
-		const { 
-			page = 1, 
-			pageSize = '',
-			amount,
-			revenueHead,
-			status,
-			invoiceId,
-			name,
-			email,
-			startdate,
-			enddate,
-			 } = req.query;
+		const { page = 1, pageSize = '', amount, revenueHead, status, invoiceId, name, email, startdate, enddate } = req.query;
 
-		const where: any = {};
+		const where: { amount?: string; revenueHeadId?: string; status?: InvoiceStatus; invoiceId?: string; name?: any; email?: any; createdAt?: any } =
+			{};
 
-		if (amount) {
-			where.amount = amount;
-		}
+		if (amount) where.amount = amount as string;
+		if (revenueHead) where.revenueHeadId = revenueHead as string;
+		if (status) where.status = status as InvoiceStatus;
+		if (invoiceId) where.invoiceId = invoiceId as string;
+		if (name) where.name = { [Op.like]: `%${name}%` };
+		if (email) where.email = { [Op.like]: `%${email}%` };
+		if (startdate && enddate) where.createdAt = { [Op.between]: [startdate, enddate] };
 
-		if (revenueHead) {
-			where.revenueHeadId = revenueHead;
-		}
-
-		if (status) {
-			where.status = status;
-		}
-
-		if (invoiceId) {
-			where.invoiceId = invoiceId;
-		}
-
-		if (name) {
-			where.name = {
-				[Op.like]: `%${name}%`,
-			};
-		}
-
-		if (email) {
-			where.email = {
-				[Op.like]: `%${email}%`,
-			};
-		}
-
-		if(startdate && enddate) {
-			where.createdAt = {
-				[Op.between]: [startdate, enddate],
-			};	
-		}
-
-
-		if(!pageSize) {
-			const invoices  = await DB.invoices.findAll({
+		if (!pageSize) {
+			const invoices = await Invoices.findAll({
 				where,
 				order: [['id', 'DESC']],
 				attributes: {
@@ -100,13 +65,13 @@ const getInvoices = async (req: Request, res: Response) => {
 				},
 				include: [
 					{
-						model: DB.revenueHeads,
+						model: RevenueHeads,
 						attributes: {
 							exclude: ['createdAt', 'updatedAt', 'mdaId'],
 						},
 						include: [
 							{
-								model: DB.mdas,
+								model: Mdas,
 								attributes: {
 									exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
 								},
@@ -115,16 +80,15 @@ const getInvoices = async (req: Request, res: Response) => {
 					},
 				],
 			});
-	
+
 			if (!invoices.length) return successResponse(res, `No invoice available!`, []);
-	
-			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrived!`, invoices);
-			
+
+			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrieved!`, invoices);
 		}
 
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const { count, rows: invoices } = await DB.invoices.findAndCountAll({
+		const { count, rows: invoices } = await Invoices.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -134,13 +98,13 @@ const getInvoices = async (req: Request, res: Response) => {
 			},
 			include: [
 				{
-					model: DB.revenueHeads,
+					model: RevenueHeads,
 					attributes: {
 						exclude: ['createdAt', 'updatedAt', 'mdaId'],
 					},
 					include: [
 						{
-							model: DB.mdas,
+							model: Mdas,
 							attributes: {
 								exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
 							},
@@ -154,14 +118,14 @@ const getInvoices = async (req: Request, res: Response) => {
 		if (invoices) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
-			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrived!`, {
+			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrieved!`, {
 				totalPages,
 				currentPage: parseInt(page as string, 10),
 				data: invoices,
 			});
 		}
 	} catch (error) {
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -172,14 +136,14 @@ const getInvoicesByEmail = async (req: Request, res: Response) => {
 
 		const where: any = {};
 
-		if(email) {
+		if (email) {
 			where.email = {
 				[Op.like]: `%${email}%`,
 			};
 		}
 
-		if(!pageSize) {
-			const invoices  = await DB.invoices.findAll({
+		if (!pageSize) {
+			const invoices = await Invoices.findAll({
 				where,
 				order: [['id', 'DESC']],
 				attributes: {
@@ -187,13 +151,13 @@ const getInvoicesByEmail = async (req: Request, res: Response) => {
 				},
 				include: [
 					{
-						model: DB.revenueHeads,
+						model: RevenueHeads,
 						attributes: {
 							exclude: ['createdAt', 'updatedAt', 'mdaId'],
 						},
 						include: [
 							{
-								model: DB.mdas,
+								model: Mdas,
 								attributes: {
 									exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
 								},
@@ -202,16 +166,15 @@ const getInvoicesByEmail = async (req: Request, res: Response) => {
 					},
 				],
 			});
-	
+
 			if (!invoices.length) return successResponse(res, `No invoice available!`, []);
-	
-			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrived!`, invoices);
-			
+
+			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrieved!`, invoices);
 		}
 
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const { count, rows: invoices } = await DB.invoices.findAndCountAll({
+		const { count, rows: invoices } = await Invoices.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -221,13 +184,13 @@ const getInvoicesByEmail = async (req: Request, res: Response) => {
 			},
 			include: [
 				{
-					model: DB.revenueHeads,
+					model: RevenueHeads,
 					attributes: {
 						exclude: ['createdAt', 'updatedAt', 'mdaId'],
 					},
 					include: [
 						{
-							model: DB.mdas,
+							model: Mdas,
 							attributes: {
 								exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
 							},
@@ -241,14 +204,14 @@ const getInvoicesByEmail = async (req: Request, res: Response) => {
 		if (invoices) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
-			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrived!`, {
+			return successResponse(res, `${invoices.length} invoice${invoices.length > 1 ? 's' : ''} retrieved!`, {
 				totalPages,
 				currentPage: parseInt(page as string, 10),
 				data: invoices,
 			});
 		}
 	} catch (error) {
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -256,20 +219,20 @@ const getInvoicesById = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
 
-		const invoice = await DB.invoices.findOne({
+		const invoice = await Invoices.findOne({
 			where: { id },
 			attributes: {
 				exclude: ['revenueHeadId'],
 			},
 			include: [
 				{
-					model: DB.revenueHeads,
+					model: RevenueHeads,
 					attributes: {
 						exclude: ['createdAt', 'updatedAt', 'mdaId'],
 					},
 					include: [
 						{
-							model: DB.mdas,
+							model: Mdas,
 							attributes: {
 								exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'],
 							},
@@ -290,14 +253,12 @@ const getInvoicesById = async (req: Request, res: Response) => {
 	}
 };
 
-
 // update category
 const updateInvoice = async (req: Request, res: Response) => {
-
 	const { id } = req.params;
 	const { status } = req.body;
 	try {
-		const invoice = await DB.invoices.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const invoice = await Invoices.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!invoice) return errorResponse(res, `invoice not found!`);
 		const updateData = {
 			status: status || invoice.status,
@@ -311,5 +272,4 @@ const updateInvoice = async (req: Request, res: Response) => {
 	}
 };
 
-
-export default { createInvoice, getInvoices, getInvoicesById, getInvoicesByEmail, updateInvoice, };
+export default { createInvoice, getInvoices, getInvoicesById, getInvoicesByEmail, updateInvoice };

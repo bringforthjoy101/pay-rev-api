@@ -4,10 +4,12 @@ import jwt from 'jsonwebtoken';
 
 // Import db & configs
 import config from '../config/configSetup';
-import DB from '../controllers/db';
 
 // Import function files
 import { errorResponse, fnResponse, handleResponse } from '../helpers/utility';
+import { Businesses } from '../models/Businesses';
+import { Mdas } from '../models/Mdas';
+import { RevenueHeads } from '../models/RevenueHeads';
 
 export const isAuthorized = async (req: Request, res: Response, next: NextFunction) => {
 	//this is the url without query params
@@ -63,36 +65,36 @@ export const isAdminOrStaff = (adminRoles: string[], staffRoles: string[]) => {
 
 export const checkBusiness = async (id: number) => {
 	try {
-		const business = await DB.businesses.findByPk(id);
-		if (!business) return fnResponse({ status: false, message: 'Businesss not found', data: null });
+		const business = await Businesses.findByPk(id);
+		if (!business) return fnResponse({ status: false, message: 'Business not found', data: null });
 		return fnResponse({ status: true, message: 'Business Found', data: business });
 	} catch (error) {
 		console.log(error);
-		return { status: false, message: 'An error occured', data: error };
+		return { status: false, message: 'An error occurred', data: error };
 	}
 };
 
 export const checkMda = async (id: string) => {
 	try {
-		const mda = await DB.mdas.findByPk(id);
+		const mda = await Mdas.findByPk(id);
 		console.log('🚀 ~ file: middlewares.ts:77 ~ checkMda ~ mda:', mda);
 		if (!mda) return fnResponse({ status: false, message: 'mda not found', data: null });
 		return fnResponse({ status: true, message: 'mda Found', data: mda });
 	} catch (error) {
 		console.log(error);
-		return { status: false, message: 'An error occured', data: error };
+		return { status: false, message: 'An error occurred', data: error };
 	}
 };
 
 export const checkRevenueHead = async (id: string) => {
 	try {
-		const revenue = await DB.revenueHeads.findByPk(id, {
+		const revenue = await RevenueHeads.findByPk(id, {
 			include: [
 				{
-					model: DB.mdas,
+					model: Mdas,
 					include: [
 						{
-							model: DB.businesses,
+							model: Businesses,
 						},
 					],
 				},
@@ -103,6 +105,6 @@ export const checkRevenueHead = async (id: string) => {
 		return fnResponse({ status: true, message: 'Revenue Head Found', data: revenue });
 	} catch (error) {
 		console.log(error);
-		return { status: false, message: 'An error occured', data: error };
+		return { status: false, message: 'An error occurred', data: error };
 	}
 };

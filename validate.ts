@@ -128,6 +128,17 @@ const validate = (method: string): any => {
 				body('revenueHeadId').not().isEmpty().isUUID().withMessage('revenueHeadId is required!'),
 			];
 		}
+		case '/update-picture': {
+			const validDir = ['profile', 'doc', 'business'];
+			return [
+				param('dir')
+					.custom((value) => {
+						console.log('dir', value);
+						return validDir.includes(value);
+					})
+					.withMessage(`Dir must contain ${validDir}`),
+			];
+		}
 	}
 };
 
