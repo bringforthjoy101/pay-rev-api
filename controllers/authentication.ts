@@ -377,6 +377,8 @@ export const sendUserOtp = async (req: Request, res: Response) => {
 };
 
 export const uploadProfile = async (req: any, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) return errorResponse(res, 'Validation Error', errors.array());
 	try {
 		const { file } = req;
 		if (!file) return errorResponse(res, 'Pls Upload a file!');

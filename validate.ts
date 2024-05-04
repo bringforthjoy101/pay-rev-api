@@ -133,7 +133,8 @@ const validate = (method: string): any => {
 			const validDir = ['profile', 'doc', 'business'];
 			return [
 				param('dir')
-					.custom((value) => !validDir.includes(value))
+					.optional()
+					.custom((value) => validDir.includes(value))
 					.withMessage(`Dir must contain ${validDir}`),
 			];
 		}
