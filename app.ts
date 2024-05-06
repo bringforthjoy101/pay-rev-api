@@ -8,7 +8,7 @@ import { initDB } from './controllers/db';
 
 const app: Application = express();
 
-app.set('trust proxy', true);
+// app.set('trust proxy', true);
 app.use(morgan('dev'));
 
 // PARSE JSON
