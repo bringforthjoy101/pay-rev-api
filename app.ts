@@ -24,5 +24,5 @@ app.listen(config.PORT, () => {
 });
 
 // Routes
-app.all('*', isAuthorized);
+// app.all('*', isAuthorized);
 app.use(routes);
