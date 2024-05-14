@@ -157,6 +157,7 @@ export const login = async ({ email, password }: LoginDataType) => {
 				status: staff.status,
 				role: staff.role,
 				businessId: staff.businessId,
+				avatar: staff.imageUrl,
 				type: 'staff',
 			};
 			const token: string = jwt.sign(payload, config.JWTSECRET);

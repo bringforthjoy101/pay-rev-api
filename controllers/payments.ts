@@ -186,8 +186,8 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 			limit: parseInt(pageSize as string, 10),
 			offset: offset,
 			include: [
-				{ model: Businesses, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-				{ model: Mdas, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+				{ model: Businesses, attributes: { exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'] } },
+				{ model: Mdas, attributes: { exclude: ['createdAt', 'updatedAt', 'publicKey', 'secretKey'] } },
 				{ model: RevenueHeads, attributes: { exclude: ['createdAt', 'updatedAt'] } },
 			],
 		});

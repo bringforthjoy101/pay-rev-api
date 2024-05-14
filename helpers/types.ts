@@ -29,6 +29,7 @@ export type AuthPayloadDataType = {
 	phone: string;
 	email: string;
 	status: string;
+	avatar: string;
 	role?: Roles | AdminRoles;
 	type: string;
 	businessId?: string;
