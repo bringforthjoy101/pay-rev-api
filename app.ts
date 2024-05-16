@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ENABLE CORS AND START SERVER
-app.use(cors({ origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(cors({ origin: true }));
 initDB();
 app.listen(config.PORT, () => {
 	console.log(config.NODE_ENV);
