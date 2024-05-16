@@ -8,7 +8,7 @@ import { initDB } from './controllers/db';
 
 const app: Application = express();
 
-// app.set('trust proxy', true);
+app.set('trust proxy', true);
 app.use(morgan('dev'));
 
 // PARSE JSON
@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ENABLE CORS AND START SERVER
-app.use(cors({ origin: true }));
+app.use(cors({ origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 initDB();
 app.listen(config.PORT, () => {
 	console.log(config.NODE_ENV);
