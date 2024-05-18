@@ -108,7 +108,7 @@ const getPaymentLogs = async (req: Request, res: Response) => {
 	try {
 		const {
 			page = 1,
-			pageSize = '',
+			pageSize = 10,
 			status,
 			payeePhone,
 			payeeEmail,

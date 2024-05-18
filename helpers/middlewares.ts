@@ -27,7 +27,7 @@ export const isAuthorized = async (req: Request, res: Response, next: NextFuncti
 		let verified: any = jwt.verify(token, config.JWTSECRET);
 
 		if (!verified) return handleResponse(res, 401, false, `Unauthorized request`);
-
+		// console.log('🚀 ~ file: middlewares.ts:53 ~ isAuthorized ~ verified', verified);
 		if (verified.type === 'admin') {
 			req.admin = verified;
 		} else {

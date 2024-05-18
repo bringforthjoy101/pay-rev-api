@@ -51,7 +51,7 @@ router.get('/otp/send', isAuthorized, sendUserOtp);
 router.post('/update-user-settings', validate('/update-user-settings'), updateUserSettings);
 router.post('/update-profile-settings', isAuthorized, validate('/update-profile-settings'), updateProfileSettings);
 router.post('/change-role', isAuthorized, validate('/change-role'), changeRole);
-router.post('/update-picture/:dir?', validate('/update-picture'), uploadFile.single('file'), uploadProfile);
+router.post('/update-picture/:dir?', isAuthorized, validate('/update-picture'), uploadFile.single('file'), uploadProfile);
 
 router.post('/admin/register', validate('/register'), admin.register);
 router.post('/admin/login', validate('/login'), admin.login);

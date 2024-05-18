@@ -387,6 +387,7 @@ export const uploadProfile = async (req: any, res: Response) => {
 			fileName: file.originalname,
 			url: file.location,
 		};
+		// console.log()
 		await Staffs.update({ imageUrl: file.location }, { where: { id: req.staff.id } });
 		return successResponse(res, `Profile uploaded successfully!`, data);
 	} catch (error) {
