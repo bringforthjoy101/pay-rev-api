@@ -95,7 +95,7 @@ const updateRole = async (req: Request, res: Response) => {
 		const role = await Roles.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!role) return errorResponse(res, `Role not found!`);
 		const updateData = {
-			name: roleName ? roleName : role.roleName,
+			roleName: roleName ? roleName : role.roleName,
 			description: description ? description : role.description,
 			permissions: permissions ? permissions : role.permissions,
 		};
