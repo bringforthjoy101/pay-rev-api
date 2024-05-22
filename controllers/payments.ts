@@ -25,23 +25,24 @@ const logPayment = async (req: Request, res: Response) => {
 
 	const { payeeName, payeePhone, payeeEmail, tnxRef, amount, revenueHeadId } = req.body;
 
-	const revenueHead = await checkRevenueHead(revenueHeadId);
-	if (!revenueHead.status) return errorResponse(res, 'Revenue Head Not found');
-
-	const { mda } = revenueHead.data.dataValues;
-	const { business } = mda.dataValues;
-
-	const insertData: PaymentLogDataType = {
-		payeeName,
-		payeePhone,
-		payeeEmail,
-		transRef: tnxRef,
-		amount: revenueHead.data.amount ? revenueHead.data.amount : amount,
-		businessId: business.dataValues.id,
-		mdaId: mda.dataValues.id,
-		revenueHeadId,
-	};
 	try {
+		const revenueHead = await checkRevenueHead(revenueHeadId);
+		if (!revenueHead.status) return errorResponse(res, 'Revenue Head Not found');
+
+		const { mda } = revenueHead.data.dataValues;
+		const { business } = mda.dataValues;
+
+		const insertData: PaymentLogDataType = {
+			payeeName,
+			payeePhone,
+			payeeEmail,
+			transRef: tnxRef,
+			amount: revenueHead.data.amount ? revenueHead.data.amount : amount,
+			businessId: business.dataValues.id,
+			mdaId: mda.dataValues.id,
+			revenueHeadId,
+		};
+
 		const logPayment: any = await PaymentReports.create(insertData);
 		console.log('logPayment:', logPayment);
 		if (logPayment) {
