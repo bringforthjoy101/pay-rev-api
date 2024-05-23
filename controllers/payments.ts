@@ -29,7 +29,7 @@ const logPayment = async (req: Request, res: Response) => {
 		const revenueHead = await checkRevenueHead(revenueHeadId);
 		if (!revenueHead.status) return errorResponse(res, 'Revenue Head Not found');
 
-		const { mda } = revenueHead.data.dataValues;
+		const { mda } = revenueHead.data;
 		const { business } = mda.dataValues;
 
 		const insertData: PaymentLogDataType = {
