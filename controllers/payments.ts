@@ -30,7 +30,7 @@ const logPayment = async (req: Request, res: Response) => {
 		if (!revenueHead.status) return errorResponse(res, 'Revenue Head Not found');
 
 		const { mda } = revenueHead.data;
-		const { business } = mda.dataValues;
+		const { business } = mda;
 
 		const insertData: PaymentLogDataType = {
 			payeeName,
@@ -38,8 +38,8 @@ const logPayment = async (req: Request, res: Response) => {
 			payeeEmail,
 			transRef: tnxRef,
 			amount: revenueHead.data.amount ? revenueHead.data.amount : amount,
-			businessId: business.dataValues.id,
-			mdaId: mda.dataValues.id,
+			businessId: business.id,
+			mdaId: mda.id,
 			revenueHeadId,
 		};
 
@@ -65,7 +65,7 @@ const logPayment = async (req: Request, res: Response) => {
 					phone: payeePhone,
 					amount: insertData.amount,
 					date: logPayment.createdAt,
-					business: { name: business.dataValues.name, mda: mda.dataValues.name, revenue: revenueHead.data.name },
+					business: { name: business.name, mda: mda.name, revenue: revenueHead.data.name },
 				},
 			});
 
@@ -83,7 +83,7 @@ const logPayment = async (req: Request, res: Response) => {
 					phone: payeePhone,
 					amount: insertData.amount,
 					date: logPayment.createdAt,
-					business: { name: business.dataValues.name, mda: mda.dataValues.name, revenue: revenueHead.data.name },
+					business: { name: business.name, mda: mda.name, revenue: revenueHead.data.name },
 				},
 			});
 
