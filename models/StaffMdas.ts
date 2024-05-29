@@ -6,13 +6,13 @@ import { Mdas } from './Mdas';
 export class StaffMdas extends Model {
 	@ForeignKey(() => Staffs)
 	@AllowNull(false)
-	@Column(DataType.INTEGER)
-	staffId!: number;
+	@Column(DataType.UUID)
+	staffId!: string;
 
 	@ForeignKey(() => Mdas)
 	@AllowNull(false)
-	@Column(DataType.INTEGER)
-	mdaId!: number;
+	@Column(DataType.UUID)
+	mdaId!: string;
 
 	@BelongsTo(() => Staffs, { onDelete: 'CASCADE' })
 	staff!: Staffs;
