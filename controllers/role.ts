@@ -2,6 +2,10 @@ import { validationResult } from 'express-validator';
 import { errorResponse, handleResponse, successResponse } from '../helpers/utility';
 import { Request, Response } from 'express';
 import { Roles } from '../models/Role';
+import { Staffs } from '../models/Staffs';
+import { StaffMdas } from '../models/StaffMdas';
+import { Mdas } from '../models/Mdas';
+import mdas from './mdas';
 
 const createRole = async (req: Request, res: Response) => {
 	// const errors = validationResult(req);
@@ -59,22 +63,43 @@ const getRole = async (req: Request, res: Response) => {
 	const { id } = req.params;
 	try {
 		const role = await Roles.findOne({
-			include: 'staffs',
+			include: [
+				{
+					model: Staffs,
+					as: 'staffs',
+					attributes: ['id', 'names', 'email', 'phone', 'status'],
+					include: [
+						{
+							model: StaffMdas,
+							as: 'mdas',
+							attributes: ['id', 'mdaId', 'staffId'],
+							include: [{ model: Mdas, as: 'mda', attributes: ['id', 'mdaName'] }],
+						},
+					],
+				},
+			],
 			where: { id },
 		});
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
 
-		const transformedUsers = role?.dataValues?.staffs?.map((staff: any) => {
+		const transformedUsers = role?.staffs?.map((staff: any) => {
 			return {
 				id: staff.id,
 				names: staff.names,
 				email: staff.email,
 				phone: staff.phone,
+				status: staff.status,
+				mdas: staff.mdas.map((mda: any) => {
+					return {
+						id: mda.id,
+						mdaName: mda.mda.mdaName,
+					};
+				}),
 			};
 		});
 
 		const transformedRole = {
-			...role?.dataValues,
+			...role,
 			staffs: transformedUsers,
 		};
 		return successResponse(res, `Role details retrieved!`, transformedRole);

@@ -2,10 +2,11 @@
 USERS TABLE
 *************************************************************************/
 
-import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasOne, Model, Table } from 'sequelize-typescript';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasMany, HasOne, Model, Table } from 'sequelize-typescript';
 import { Roles } from './Role';
 import { Businesses } from './Businesses';
 import { StaffSettings } from './StaffSettings';
+import { StaffMdas } from './StaffMdas';
 
 export enum StaffStatus {
 	ACTIVE = 'active',
@@ -68,4 +69,7 @@ export class Staffs extends Model {
 
 	@HasOne(() => StaffSettings, { onDelete: 'CASCADE' })
 	staffSetting!: Roles;
+
+	@HasMany(() => StaffMdas, { onDelete: 'CASCADE' })
+	staffMdas!: StaffMdas[];
 }

@@ -6,6 +6,7 @@ import { DataTypes } from 'sequelize';
 import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasMany, Model, Scopes, Table } from 'sequelize-typescript';
 import { Businesses } from './Businesses';
 import { RevenueHeads } from './RevenueHeads';
+import { StaffMdas } from './StaffMdas';
 
 export enum MdaStatus {
 	ACTIVE = 'active',
@@ -54,4 +55,7 @@ export class Mdas extends Model {
 
 	@HasMany(() => RevenueHeads, { onDelete: 'CASCADE' })
 	revenueHeads!: RevenueHeads[];
+
+	@HasMany(() => StaffMdas, { onDelete: 'CASCADE' })
+	staffMdas!: StaffMdas[];
 }
