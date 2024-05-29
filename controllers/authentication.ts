@@ -26,6 +26,10 @@ import { otpMailTemplate } from '../helpers/mailer/template';
 import { Staffs } from '../models/Staffs';
 import { StaffSettings } from '../models/StaffSettings';
 import { Otp } from '../models/Otp';
+import { StaffMdas } from '../models/StaffMdas';
+import { Mdas } from '../models/Mdas';
+import { Op } from 'sequelize';
+import axios from 'axios';
 
 export const register = async (req: Request, res: Response) => {
 	console.log(req.staff);
@@ -98,10 +102,15 @@ export const addAccount = async (req: Request, res: Response) => {
 		// if staff exists, stop the process and return a message
 		if (staffExists) return handleResponse(res, 400, false, `staff with email ${email} already exists`);
 
+		const mdasArr = await Mdas.findAll({ where: { id: { [Op.in]: mdas } } });
+		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { mdasArr });
+		if (!mdasArr.length) return errorResponse(res, 'Invalid Mdas');
+
 		const staff: any = await Staffs.create(insertData);
 
 		if (staff) {
-			await StaffSettings.create({ staffId: staff.dataValues.id });
+			await StaffSettings.create({ staffId: staff.id });
+			await StaffMdas.bulkCreate(mdasArr.map((mda) => ({ staffId: staff.id, mdaId: mda.id })));
 
 			const emailBody = `
 			Dear ${names},
