@@ -80,7 +80,6 @@ const getRole = async (req: Request, res: Response) => {
 			],
 			where: { id },
 		});
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { role });
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
 
 		const transformedUsers = role?.staffs?.map((staff) => {
@@ -99,8 +98,6 @@ const getRole = async (req: Request, res: Response) => {
 			};
 		});
 
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { transformedUsers });
-
 		// const transformedRole = {
 		// 	...role,
 		// 	staffs: transformedUsers,
@@ -108,7 +105,6 @@ const getRole = async (req: Request, res: Response) => {
 		return successResponse(res, `Role details retrieved!`, role);
 	} catch (error: any) {
 		console.log(error);
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { error: error.message });
 		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };

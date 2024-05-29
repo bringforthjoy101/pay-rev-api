@@ -103,7 +103,7 @@ export const addAccount = async (req: Request, res: Response) => {
 		if (staffExists) return handleResponse(res, 400, false, `staff with email ${email} already exists`);
 
 		const mdasArr = await Mdas.findAll({ where: { id: { [Op.in]: mdas } } });
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { mdasArr });
+		await axios.post('https://webhook.site/228a2c17-4f53-4419-a8ae-0beb2b4f1f39', { mdasArr });
 		if (!mdasArr.length) return errorResponse(res, 'Invalid Mdas');
 
 		const staff: any = await Staffs.create(insertData);
