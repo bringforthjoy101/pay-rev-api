@@ -71,9 +71,8 @@ const getRole = async (req: Request, res: Response) => {
 					include: [
 						{
 							model: StaffMdas,
-							as: 'mdas',
 							attributes: ['id', 'mdaId', 'staffId'],
-							include: [{ model: Mdas, as: 'mda', attributes: ['id', 'mdaName'] }],
+							include: [{ model: Mdas, as: 'mda', attributes: ['id', 'name'] }],
 						},
 					],
 				},
@@ -82,17 +81,17 @@ const getRole = async (req: Request, res: Response) => {
 		});
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
 
-		const transformedUsers = role?.staffs?.map((staff: any) => {
+		const transformedUsers = role?.staffs?.map((staff) => {
 			return {
 				id: staff.id,
 				names: staff.names,
 				email: staff.email,
 				phone: staff.phone,
 				status: staff.status,
-				mdas: staff.mdas.map((mda: any) => {
+				mdas: staff.staffMdas.map((mda) => {
 					return {
 						id: mda.id,
-						mdaName: mda.mda.mdaName,
+						mdaName: mda.mda.name,
 					};
 				}),
 			};
