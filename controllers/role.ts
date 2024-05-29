@@ -90,7 +90,7 @@ const getRole = async (req: Request, res: Response) => {
 				email: staff.email,
 				phone: staff.phone,
 				status: staff.status,
-				mdas: staff.staffMdas.map((mda) => {
+				mdas: staff.staffMdas?.map((mda) => {
 					return {
 						id: mda.id,
 						mdaName: mda.mda.name,
@@ -101,14 +101,14 @@ const getRole = async (req: Request, res: Response) => {
 
 		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { transformedUsers });
 
-		const transformedRole = {
-			...role,
-			staffs: transformedUsers,
-		};
-		return successResponse(res, `Role details retrieved!`, transformedRole);
-	} catch (error) {
+		// const transformedRole = {
+		// 	...role,
+		// 	staffs: transformedUsers,
+		// };
+		return successResponse(res, `Role details retrieved!`, role);
+	} catch (error: any) {
 		console.log(error);
-		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { error });
+		await axios.post('https://webhook.site/90dbae2a-6939-4b97-8b3c-fcd9fbd0c72c', { error: error.message });
 		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
