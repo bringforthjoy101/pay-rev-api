@@ -448,11 +448,11 @@ const revalidatePayment = async (req: Request, res: Response) => {
 			where: {
 				transRef: id,
 			},
-			include: { model: Mdas.scope('withSecretKey') },
+			include: [{ model: Mdas }],
 		});
 
 		if (!payment) return errorResponse(res, `Payment log with transRef ${id} not found!`);
-		const encondedRef = Buffer.from(payment.mda.dataValues.secretKey).toString('base64');
+		const encondedRef = Buffer.from(payment.mda.secretKey).toString('base64');
 		// console.log('revalidation response ', payment.mda.dataValues)
 		const fpResp = await fpAxios.get(`/checkout/revalidate-payment/${id}`, {
 			headers: {
