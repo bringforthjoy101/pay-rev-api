@@ -41,7 +41,7 @@ export class RevenueHeads extends Model {
 	mdaId!: string;
 
 	@BelongsTo(() => Mdas, { onDelete: 'CASCADE' })
-	business!: Mdas;
+	mda!: Mdas;
 
 	@HasMany(() => Invoices, { onDelete: 'CASCADE' })
 	invoices!: Invoices[];

@@ -88,7 +88,8 @@ export const checkMda = async (id: string) => {
 
 export const checkRevenueHead = async (id: string) => {
 	try {
-		const revenue = await RevenueHeads.findByPk(id, {
+		const revenue = await RevenueHeads.findOne({
+			where: { id },
 			include: [
 				{
 					model: Mdas,
