@@ -12,11 +12,11 @@ export enum MdaStatus {
 	INACTIVE = 'inactive',
 }
 
-@Scopes(() => ({
-	withSecretKey: {
-		include: ['secretKey'],
-	},
-}))
+// @Scopes(() => ({
+// 	withSecretKey: {
+// 		include: ['secretKey'],
+// 	},
+// }))
 @Table({ timestamps: true, tableName: 'mdas' })
 export class Mdas extends Model {
 	@Column({
