@@ -348,7 +348,7 @@ export const updateUser = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, userId: id, status, roleId } = req.body;
+	const { names, email, staffId: id, status, roleId } = req.body;
 
 	try {
 		const staff = await Staffs.findOne({ where: { id } });
