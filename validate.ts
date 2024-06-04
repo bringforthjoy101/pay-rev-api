@@ -1,4 +1,5 @@
 import { body, param, CustomSanitizer } from 'express-validator';
+import { StaffStatus } from './models/Staffs';
 
 const validate = (method: string): any => {
 	switch (method) {
@@ -28,11 +29,17 @@ const validate = (method: string): any => {
 				body('mdas').optional().isObject().withMessage('Phone is required!'),
 			];
 		}
-		case '/change-role': {
+		case '/update-user': {
 			return [
 				body('names').optional().isString().withMessage('names is required!'),
-				body('email').optional().isString().withMessage('Email is required!'),
+				body('staffId').notEmpty().isString().withMessage('staffId is required!'),
 				body('roleId').optional().isString().withMessage('Role ID is required!'),
+				body('status')
+					.optional({ checkFalsy: true })
+					.custom((value) => {
+						return [StaffStatus.ACTIVE, StaffStatus.INACTIVE].includes(value);
+					})
+					.withMessage('status is required and must be active or inactive!'),
 			];
 		}
 		case '/login': {
@@ -43,6 +50,17 @@ const validate = (method: string): any => {
 		}
 		case '/update-user-settings': {
 			return [body('twoFa').not().isEmpty().isBoolean().withMessage('2fa is required and must be boolean!')];
+		}
+		case '/update-user-status': {
+			return [
+				body('status')
+					.notEmpty()
+					.custom((value) => {
+						return [StaffStatus.ACTIVE, StaffStatus.INACTIVE].includes(value);
+					})
+					.withMessage('status is required and must be active or inactive!'),
+				body('staffId').not().isEmpty().isString().withMessage('staffId is required!'),
+			];
 		}
 		case '/update-password': {
 			return [

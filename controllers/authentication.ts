@@ -343,23 +343,43 @@ export const updateProfileSettings = async (req: Request, res: Response) => {
 	}
 };
 
-export const changeRole = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, roleId } = req.body;
+	const { names, email, userId: id, status, roleId } = req.body;
 
 	try {
+		const staff = await Staffs.findOne({ where: { id } });
+		if (!staff) return errorResponse(res, `Staff not found!`);
 		const data = {
-			names,
-			email,
-			roleId,
+			names: names || staff.names,
+			email: email || staff.email,
+			roleId: roleId || staff.roleId,
+			status: status || staff.status,
 		};
-		const staff = await Staffs.findOne({ where: { email } });
 		const updatedSettings: any = await staff?.update(data);
 		if (!updatedSettings) return errorResponse(res, `Unable to change role!`);
 		return successResponse(res, `Role changed successfully`);
+	} catch (error) {
+		console.log(error);
+		return errorResponse(res, `An error occurred - ${error}`);
+	}
+};
+
+export const updateUserStatus = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return errorResponse(res, 'Validation Error', errors.array());
+	}
+	const { status, staffId: id } = req.body;
+
+	try {
+		const staff = await Staffs.findOne({ where: { id } });
+		const updatedStatus: any = await staff?.update({ status });
+		if (!updatedStatus) return errorResponse(res, `Unable update status!`);
+		return successResponse(res, `Status updated successfully`);
 	} catch (error) {
 		console.log(error);
 		return errorResponse(res, `An error occurred - ${error}`);

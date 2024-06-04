@@ -12,9 +12,10 @@ import {
 	updateUserSettings,
 	updateProfileSettings,
 	addAccount,
-	changeRole,
 	sendUserOtp,
 	uploadProfile,
+	updateUserStatus,
+	updateUser,
 } from './controllers/authentication';
 import admin from './controllers/admins';
 import business from './controllers/businesses';
@@ -50,7 +51,8 @@ router.post('/verify-otp', validate('/verify-otp'), verifyOtp);
 router.get('/otp/send', isAuthorized, sendUserOtp);
 router.post('/update-user-settings', validate('/update-user-settings'), updateUserSettings);
 router.post('/update-profile-settings', isAuthorized, validate('/update-profile-settings'), updateProfileSettings);
-router.post('/change-role', isAuthorized, validate('/change-role'), changeRole);
+router.post('/update-user', isAuthorized, validate('/update-user'), updateUser);
+router.post('/update-user-status', validate('/update-user-status'), updateUserStatus);
 router.post('/update-picture/:dir?', isAuthorized, validate('/update-picture'), uploadFile.single('file'), uploadProfile);
 
 router.post('/admin/register', validate('/register'), admin.register);
