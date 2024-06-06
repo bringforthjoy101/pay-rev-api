@@ -31,10 +31,15 @@ const validate = (method: string): any => {
 		}
 		case '/update-user': {
 			return [
-				body('names').optional().isString().withMessage('names is required!'),
-				body('email').optional().isString().withMessage('email is required!'),
+				body('names').optional({ checkFalsy: true }).isString().withMessage('names is required!'),
+				body('email').optional({ checkFalsy: true }).isString().withMessage('email is required!'),
+				body('phone').optional({ checkFalsy: true }).isString().withMessage('phone is required!'),
+				body('mdas')
+					.optional()
+					.custom((value) => Array.isArray(value))
+					.withMessage('mdas must be an array'),
 				body('staffId').notEmpty().isString().withMessage('staffId is required!'),
-				body('roleId').optional().isString().withMessage('Role ID is required!'),
+				body('roleId').optional({ checkFalsy: true }).isString().withMessage('Role ID is required!'),
 				body('status')
 					.optional({ checkFalsy: true })
 					.custom((value) => {

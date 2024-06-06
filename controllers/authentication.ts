@@ -348,20 +348,27 @@ export const updateUser = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return errorResponse(res, 'Validation Error', errors.array());
 	}
-	const { names, email, staffId: id, status, roleId } = req.body;
+	const { names, email, phone, staffId: id, status, roleId, mdas } = req.body;
 
 	try {
 		const staff = await Staffs.findOne({ where: { id } });
 		if (!staff) return errorResponse(res, `Staff not found!`);
+		if (mdas && mdas.length) {
+			const mdasArr = await Mdas.findAll({ where: { id: { [Op.in]: mdas } } });
+			await StaffMdas.destroy({ where: { staffId: id } });
+			await StaffMdas.bulkCreate(mdasArr.map((mda) => ({ staffId: id, mdaId: mda.id })));
+		}
 		const data = {
 			names: names || staff.names,
 			email: email || staff.email,
+			phone: phone || staff.phone,
 			roleId: roleId || staff.roleId,
 			status: status || staff.status,
 		};
 		const updatedSettings: any = await staff?.update(data);
-		if (!updatedSettings) return errorResponse(res, `Unable to change role!`);
-		return successResponse(res, `Role changed successfully`);
+		if (!updatedSettings) return errorResponse(res, `Unable to update user!`);
+
+		return successResponse(res, `Operation successful`);
 	} catch (error) {
 		console.log(error);
 		return errorResponse(res, `An error occurred - ${error}`);
