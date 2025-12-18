@@ -8,7 +8,10 @@
     "serve": "nodemon app.ts",
     "build": "tsc --project ./",
     "start": "npm run build && node ./build/app.js",
-    "postinstall": "tsc"
+    "postinstall": "tsc",
+    "db:connect": "./db-connect.sh",
+    "db:seed": "npx sequelize-cli db:seed:all",
+    "db:seed:undo": "npx sequelize-cli db:seed:undo:all"
   },
   "author": "",
   "license": "ISC",

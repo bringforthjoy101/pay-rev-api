@@ -5,3 +5,5 @@ config.json
 sequelizeData.json
 dev.ts
 .env
+db-connect.sh
+.DS_Store

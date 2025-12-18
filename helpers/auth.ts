@@ -13,6 +13,9 @@ import { prepareMail, prepareMailVerification } from './mailer/mailer';
 import { otpMailTemplate } from './mailer/template';
 import { Otp } from '../models/Otp';
 import { Staffs } from '../models/Staffs';
+import { Roles } from '../models/Role';
+import { Businesses } from '../models/Businesses';
+import { StaffMdas } from '../models/StaffMdas';
 
 export const sendOtp = async ({ email, type, password }: SendOtpDataType) => {
 	try {
@@ -140,7 +143,11 @@ export const sendOtpVerifyStaff = async ({ email, type }: SendOtpVerifyDataType)
 
 export const login = async ({ email, password }: LoginDataType) => {
 	try {
-		const staff = await Staffs.findOne({ where: { email }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const staff = await Staffs.findOne({
+			where: { email },
+			attributes: { exclude: ['createdAt', 'updatedAt'] },
+			include: [{ model: Roles }, { model: Businesses }, { model: StaffMdas }],
+		});
 
 		if (staff) {
 			const validPass: boolean = bcrypt.compareSync(password, staff.password);
@@ -157,6 +164,7 @@ export const login = async ({ email, password }: LoginDataType) => {
 				status: staff.status,
 				role: staff.role,
 				businessId: staff.businessId,
+				mdas: staff.staffMdas,
 				avatar: staff.imageUrl,
 				type: 'staff',
 			};

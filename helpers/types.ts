@@ -1,5 +1,6 @@
 import { AdminRoles } from '../models/Admins';
 import { Roles } from '../models/Role';
+import { StaffMdas } from '../models/StaffMdas';
 
 export type RegisterDataType = {
 	names: string;
@@ -31,6 +32,7 @@ export type AuthPayloadDataType = {
 	status: string;
 	avatar?: string;
 	role?: Roles | AdminRoles;
+	mdas?: StaffMdas[];
 	type: string;
 	businessId?: string;
 };
