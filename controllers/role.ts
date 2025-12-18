@@ -1,7 +1,12 @@
 import { validationResult } from 'express-validator';
 import { errorResponse, handleResponse, successResponse } from '../helpers/utility';
 import { Request, Response } from 'express';
-import DB from './db';
+import { Roles } from '../models/Role';
+import { Staffs } from '../models/Staffs';
+import { StaffMdas } from '../models/StaffMdas';
+import { Mdas } from '../models/Mdas';
+import mdas from './mdas';
+import axios from 'axios';
 
 const createRole = async (req: Request, res: Response) => {
 	// const errors = validationResult(req);
@@ -12,7 +17,7 @@ const createRole = async (req: Request, res: Response) => {
 	const { roleName, permissions, description } = req.body;
 
 	try {
-		const revenueHead = await DB.roles.findOne({ where: { id: roleName } });
+		const revenueHead = await Roles.findOne({ where: { id: roleName } });
 		if (revenueHead) return errorResponse(res, `Role already exists`);
 
 		const insertData = {
@@ -21,7 +26,7 @@ const createRole = async (req: Request, res: Response) => {
 			description,
 		};
 
-		const role: any = await DB.roles.create(insertData);
+		const role: any = await Roles.create(insertData);
 
 		if (role) {
 			return successResponse(res, `Role creation successful`);
@@ -35,18 +40,17 @@ const createRole = async (req: Request, res: Response) => {
 
 const getRoles = async (req: Request, res: Response) => {
 	try {
-	
-		const roles = await DB.roles.findAll({ 
-			include: "staffs",
-			order: [['id', 'DESC']]
-		 });
+		const roles = await Roles.findAll({
+			include: 'staffs',
+			order: [['id', 'DESC']],
+		});
 
-		 const transformedRoles = roles?.map((role: any) => {
+		const transformedRoles = roles?.map((role: any) => {
 			return {
-			  ...role?.dataValues,
-			  staffs: role?.dataValues.staffs.length
+				...role?.dataValues,
+				staffs: role?.dataValues.staffs.length,
 			};
-		 });
+		});
 
 		if (!transformedRoles?.length) return successResponse(res, `No role available!`, []);
 		return successResponse(res, `${transformedRoles.length} category${transformedRoles.length > 1 ? 'es' : ''} retrieved!`, transformedRoles);
@@ -56,35 +60,54 @@ const getRoles = async (req: Request, res: Response) => {
 	}
 };
 
-
 const getRole = async (req: Request, res: Response) => {
 	const { id } = req.params;
 	try {
-		const role = await DB.roles.findOne({ 
-			include: "staffs", 
-			where: { id } });
+		const role = await Roles.findOne({
+			include: [
+				{
+					model: Staffs,
+					as: 'staffs',
+					attributes: ['id', 'names', 'email', 'phone', 'status'],
+					include: [
+						{
+							model: StaffMdas,
+							attributes: ['id', 'mdaId', 'staffId'],
+							include: [{ model: Mdas, attributes: ['id', 'name'] }],
+						},
+					],
+				},
+			],
+			where: { id },
+		});
 		if (!role) return errorResponse(res, `Role with ID ${id} not found!`);
 
-		const transformedUsers = role?.dataValues?.staffs?.map((staff: any) => {
+		const transformedUsers = role?.staffs?.map((staff) => {
 			return {
-			  id: staff.id,
-			  names: staff.names,
-			  email: staff.email,
-			  phone: staff.phone,
+				id: staff.id,
+				names: staff.names,
+				email: staff.email,
+				phone: staff.phone,
+				status: staff.status,
+				mdas: staff.staffMdas?.map((mda) => {
+					return {
+						id: mda.id,
+						mdaName: mda.mda.name,
+					};
+				}),
 			};
-		 });
+		});
 
-		 const transformedRole = {
-			...role?.dataValues,
-			staffs: transformedUsers
-		 }
-		return successResponse(res, `Role details retrieved!`, transformedRole);
-	} catch (error) {
+		// const transformedRole = {
+		// 	...role,
+		// 	staffs: transformedUsers,
+		// };
+		return successResponse(res, `Role details retrieved!`, role);
+	} catch (error: any) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occurred - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
-
 
 const updateRole = async (req: Request, res: Response) => {
 	// const errors = validationResult(req);
@@ -92,14 +115,14 @@ const updateRole = async (req: Request, res: Response) => {
 	// 	return errorResponse(res, 'Validation Error', errors.array());
 	// }
 	const { id } = req.params;
-	const { roleName, permissions, description, } = req.body;
+	const { roleName, permissions, description } = req.body;
 	try {
-		const role = await DB.roles.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const role = await Roles.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!role) return errorResponse(res, `Role not found!`);
 		const updateData = {
-			name: roleName || role.roleName,
-			description: description || role.description,
-			permissions: permissions || role.permissions,
+			roleName: roleName ? roleName : role.roleName,
+			description: description ? description : role.description,
+			permissions: permissions ? permissions : role.permissions,
 		};
 		const updatedRole: any = await role.update(updateData);
 		if (!updatedRole) return errorResponse(res, `Unable to update role!`);
@@ -117,7 +140,7 @@ const deleteRole = async (req: Request, res: Response) => {
 	// }
 	const { id } = req.params;
 	try {
-		const checkRole = await DB.roles.findOne({ where: { id } });
+		const checkRole = await Roles.findOne({ where: { id } });
 		if (!checkRole) return errorResponse(res, `Role with ID ${id} not found!`);
 		await checkRole.destroy({ force: true });
 		return successResponse(res, `Role with ID ${id} deleted successfully!`);
@@ -127,4 +150,4 @@ const deleteRole = async (req: Request, res: Response) => {
 	}
 };
 
-export default { createRole, getRoles, getRole, updateRole, deleteRole, };
+export default { createRole, getRoles, getRole, updateRole, deleteRole };

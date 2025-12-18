@@ -3,30 +3,27 @@ AGENT SETTINGS TABLE
 *************************************************************************/
 
 import { DataTypes } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Staffs } from './Staffs';
 
-export default function (sequelize: any, Sequelize: any) {
-	var StaffSettings = sequelize.define(
-		'staffSettings',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			twoFa: {
-				type: Sequelize.BOOLEAN,
-				defaultValue: false,
-				allowNull: false,
-			},
-		},
-		{
-			freezeTableName: true,
-		}
-	);
+@Table({ timestamps: true, tableName: 'staffSettings' })
+export class StaffSettings extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	StaffSettings.associate = function (models: any) {
-		models.staffSettings.belongsTo(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'staffId' });
-	};
+	@Default(false)
+	@Column(DataType.BOOLEAN)
+	twoFa!: boolean;
 
-	return StaffSettings;
+	@ForeignKey(() => Staffs)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	staffId!: string;
+
+	@BelongsTo(() => Staffs, { onDelete: 'CASCADE' })
+	staff!: Staffs;
 }

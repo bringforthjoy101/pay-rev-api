@@ -2,36 +2,29 @@
 AGENT SETTINGS TABLE
 *************************************************************************/
 
-import { DataTypes } from 'sequelize';
+import { AllowNull, Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Staffs } from './Staffs';
 
-export default function (sequelize: any, Sequelize: any) {
-	var Role = sequelize.define(
-		'roles',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			roleName: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			description: {
-				type: Sequelize.STRING,
-				allowNull: true,
-			},
-			permissions: {
-				type: Sequelize.JSON,
-				allowNull: false,
-			},
-		},{
-			freezeTableName: true,
-		});
+@Table({ timestamps: true, tableName: 'roles' })
+export class Roles extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	Role.associate = function (models: any) {
-		models.roles.hasMany(models.staffs, { onDelete: 'cascade', targetKey: 'id', foreignKey: 'roleId' });
-	};
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	roleName!: string;
 
-	return Role;
+	@Column(DataType.TEXT)
+	description!: string;
+
+	@AllowNull(false)
+	@Column(DataType.JSON)
+	permissions!: any;
+
+	@HasMany(() => Staffs, { onDelete: 'CASCADE' })
+	staffs!: Staffs[];
 }

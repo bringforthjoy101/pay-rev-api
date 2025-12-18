@@ -21,6 +21,11 @@ type Config = {
 	TWILLIO_MESSAGE_SERVICE_ID: string;
 	PAYMENT_BASE_URL: string;
 	PAYMENT_AUTH: string;
+	AWS_SECRETKEY: string;
+	AWS_ACCESSKEY: string;
+	AWS_BUCKETNAME: string;
+	AWS_ACL: string;
+	AWS_REGION: string;
 	PUBLIC_ROUTES: string[] | [];
 };
 
@@ -45,6 +50,11 @@ const getConfig = (): Config => {
 		TWILLIO_MESSAGE_SERVICE_ID: process.env.TWILLIO_MESSAGE_SERVICE_ID,
 		PAYMENT_BASE_URL: process.env.PAYMENT_BASE_URL,
 		PAYMENT_AUTH: process.env.PAYMENT_AUTH,
+		AWS_SECRETKEY: process.env.AWS_SECRETKEY,
+		AWS_ACCESSKEY: process.env.AWS_ACCESSKEY,
+		AWS_BUCKETNAME: process.env.AWS_BUCKETNAME,
+		AWS_ACL: process.env.AWS_ACL,
+		AWS_REGION: process.env.AWS_REGION,
 		PUBLIC_ROUTES: [
 			'/',
 			'/login',

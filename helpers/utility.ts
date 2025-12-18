@@ -1,3 +1,4 @@
+import { NextFunction } from 'express';
 import { FnResponseDataType } from './types';
 
 export const handleResponse = (res: any, statusCode: number, status: boolean, message: string, data?: any) => {
@@ -49,3 +50,19 @@ export const formatCurrency = Intl.NumberFormat('en-US', {
 	style: 'currency',
 	currency: 'NGN',
 });
+
+export const uploads = async (req: Request, res: Response, next: NextFunction) => {
+	const { query }: any = req;
+	if (!['profile', 'doc', 'package', 'business', undefined].includes(query.dir)) return errorResponse(res, 'invalid dir');
+	next();
+};
+
+export const generateUUID = () => {
+	let dt = new Date().getTime();
+	const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		const r = (dt + Math.random() * 16) % 16 | 0;
+		dt = Math.floor(dt / 16);
+		return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16);
+	});
+	return uuid;
+};

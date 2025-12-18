@@ -2,13 +2,12 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-// Import db
-import DB from './db';
-
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { RevenueHeadDataType, IdsDataType } from '../helpers/types';
 import { Op } from 'sequelize';
+import { RevenueHeads, RevenueStatus } from '../models/RevenueHeads';
+import { Mdas } from '../models/Mdas';
 
 // create revenueHead
 const createRevenueHead = async (req: Request, res: Response) => {
@@ -22,7 +21,7 @@ const createRevenueHead = async (req: Request, res: Response) => {
 	const insertData: RevenueHeadDataType = { name, amount, mdaId, amountEditable };
 
 	try {
-		const revenueHeadExists: any = await DB.revenueHeads.findOne({
+		const revenueHeadExists: any = await RevenueHeads.findOne({
 			where: { name, amount },
 			attributes: { exclude: ['createdAt', 'updatedAt'] },
 		});
@@ -30,61 +29,31 @@ const createRevenueHead = async (req: Request, res: Response) => {
 		// if revenueHead exists, stop the process and return a message
 		if (revenueHeadExists) return errorResponse(res, `RevenueHead with name ${name} already exists`);
 
-		const revenueHead: any = await DB.revenueHeads.create(insertData);
+		const revenueHead: any = await RevenueHeads.create(insertData);
 
-		if (revenueHead) return successResponse(res, `RevenueHead creation successfull`);
-		return errorResponse(res, `An error occured`);
+		if (revenueHead) return successResponse(res, `RevenueHead creation successful`);
+		return errorResponse(res, `An error occurred`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
 // get all revenueHeads
 const getRevenueHeads = async (req: Request, res: Response) => {
 	try {
-		const where: any = {};
-		// if (!req.params) {
-		// 	where.status = 'active';
-		// }
+		const where: { name?: any; amount?: string; status?: RevenueStatus; mdaId?: string; createdAt?: any } = {};
+		const { page = 1, pageSize = '10', name, amount, status, mda, startdate, enddate } = req.query;
 
-		const { 
-			page = 1, 
-			pageSize = '10',
-			name,
-			amount,
-			status,
-			mda,
-			startdate,
-			enddate,
-			 } = req.query;
-
-		if (name){
-			where.name = { [Op.like]: `%${name}%` }
-		};
-
-		if (amount){
-			where.amount = amount;
-		}
-
-		if (status){
-			where.status = status;
-		}
-
-		if (mda){
-			where.mdaId = mda;
-		}
-
-		if (startdate && enddate) {
-			where.createdAt = {
-				[Op.between]: [startdate, enddate],
-			};
-		}
-
+		if (name) where.name = { [Op.like]: `%${name}%` };
+		if (amount) where.amount = amount as string;
+		if (status) where.status = status as RevenueStatus;
+		if (mda) where.mdaId = mda as string;
+		if (startdate && enddate) where.createdAt = { [Op.between]: [startdate, enddate] };
 
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({
+		const { count, rows: revenueHeads } = await RevenueHeads.findAndCountAll({
 			where,
 			order: [['id', 'DESC']],
 			limit: parseInt(pageSize as string, 10),
@@ -95,7 +64,7 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 		if (revenueHeads) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
-			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrived!`, {
+			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrieved!`, {
 				totalPages,
 				currentPage: parseInt(page as string, 10),
 				data: revenueHeads,
@@ -103,7 +72,7 @@ const getRevenueHeads = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -118,9 +87,9 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 		const { page = 1, pageSize = '10' } = req.query;
 		const offset = (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10);
 
-		const mda = await DB.mdas.findOne({ where: { id }, attributes: ['name', 'address'] });
+		const mda = await Mdas.findOne({ where: { id }, attributes: ['name', 'address'] });
 
-		const { count, rows: revenueHeads } = await DB.revenueHeads.findAndCountAll({
+		const { count, rows: revenueHeads } = await RevenueHeads.findAndCountAll({
 			where: {
 				...where,
 				mdaId: id,
@@ -130,21 +99,21 @@ const getRevenueHeadByMda = async (req: Request, res: Response) => {
 			offset: offset,
 		});
 
-		if (!revenueHeads.length) return successResponse(res, `No revenue head available!`, mda.dataValues);
+		if (!revenueHeads.length) return successResponse(res, `No revenue head available!`, mda);
 		if (revenueHeads) {
 			const totalPages = Math.ceil(count / parseInt(pageSize as string, 10));
 
-			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrived!`, {
+			return successResponse(res, `${revenueHeads.length} revenueHead${revenueHeads.length > 1 ? 'es' : ''} retrieved!`, {
 				totalPages,
 				count,
 				currentPage: parseInt(page as string, 10),
-				mda: mda.dataValues,
+				mda: mda,
 				data: revenueHeads,
 			});
 		}
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -156,12 +125,12 @@ const getRevenueHeadDetails = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const revenueHead = await DB.revenueHeads.findOne({ where: { id } });
+		const revenueHead = await RevenueHeads.findOne({ where: { id } });
 		if (!revenueHead) return errorResponse(res, `Address with ID ${id} not found!`);
-		return successResponse(res, `Address details retrived!`, revenueHead);
+		return successResponse(res, `Address details retrieved!`, revenueHead);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -174,7 +143,7 @@ const updateRevenueHead = async (req: Request, res: Response) => {
 	const { id } = req.params;
 	const { name, amount, status } = req.body;
 	try {
-		const revenueHead = await DB.revenueHeads.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const revenueHead = await RevenueHeads.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!revenueHead) return errorResponse(res, `revenueHead not found!`);
 		const updateData: RevenueHeadDataType = {
 			name: name || revenueHead.name,
@@ -186,7 +155,7 @@ const updateRevenueHead = async (req: Request, res: Response) => {
 		return successResponse(res, `RevenueHead updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -198,13 +167,13 @@ const deleteRevenueHead = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const checkRevenueHead = await DB.revenueHeads.findOne({ where: { id } });
+		const checkRevenueHead = await RevenueHeads.findOne({ where: { id } });
 		if (!checkRevenueHead) return errorResponse(res, `RevenueHead with ID ${id} not found!`);
 		await checkRevenueHead.destroy({ force: true });
 		return successResponse(res, `RevenueHead with ID ${id} deleted successfully!`);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -219,7 +188,7 @@ const deleteMultipleRevenueHeads = async (req: Request, res: Response) => {
 		let errorArr = [];
 		let successArr = [];
 		for (let i = 0; i < ids.length; i++) {
-			const checkRevenueHead = await DB.revenueHeads.findOne({
+			const checkRevenueHead = await RevenueHeads.findOne({
 				where: { id: ids[i] },
 			});
 			if (checkRevenueHead) {
@@ -239,7 +208,7 @@ const deleteMultipleRevenueHeads = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 

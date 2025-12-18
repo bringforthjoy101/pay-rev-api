@@ -2,12 +2,10 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-// Import db
-import DB from './db';
-
 // Import function files
 import { handleResponse, successResponse, errorResponse } from '../helpers/utility';
 import { CategoryDataType, IdsDataType } from '../helpers/types';
+import { Categories } from '../models/Categories';
 
 // create category
 const createCategory = async (req: Request, res: Response) => {
@@ -21,18 +19,18 @@ const createCategory = async (req: Request, res: Response) => {
 	const insertData: CategoryDataType = { name, businessId };
 
 	try {
-		const categoryExists: any = await DB.categories.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const categoryExists: any = await Categories.findOne({ where: { name }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 
 		// if category exists, stop the process and return a message
 		if (categoryExists) return errorResponse(res, `category with name ${name} already exists`);
 
-		const category: any = await DB.categories.create(insertData);
+		const category: any = await Categories.create(insertData);
 
-		if (category) return successResponse(res, `Category creation successfull`);
-		return errorResponse(res, `An error occured`);
+		if (category) return successResponse(res, `Category creation successful`);
+		return errorResponse(res, `An error occurred`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -43,13 +41,13 @@ const getCategories = async (req: Request, res: Response) => {
 		if (!req.params) {
 			where.status = 'active';
 		}
-		const categories = await DB.categories.findAll({ where, order: [['id', 'DESC']] });
+		const categories = await Categories.findAll({ where, order: [['id', 'DESC']] });
 
 		if (!categories.length) return successResponse(res, `No address available!`, []);
-		return successResponse(res, `${categories.length} category${categories.length > 1 ? 'es' : ''} retrived!`, categories);
+		return successResponse(res, `${categories.length} category${categories.length > 1 ? 'es' : ''} retrieved!`, categories);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -61,12 +59,12 @@ const getCategoryDetails = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const category = await DB.categories.findOne({ where: { id } });
+		const category = await Categories.findOne({ where: { id } });
 		if (!category) return errorResponse(res, `Address with ID ${id} not found!`);
-		return successResponse(res, `Address details retrived!`, category);
+		return successResponse(res, `Address details retrieved!`, category);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -79,7 +77,7 @@ const updateCategory = async (req: Request, res: Response) => {
 	const { id } = req.params;
 	const { name, status } = req.body;
 	try {
-		const category = await DB.categories.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
+		const category = await Categories.findOne({ where: { id }, attributes: { exclude: ['createdAt', 'updatedAt'] } });
 		if (!category) return errorResponse(res, `category not found!`);
 		const updateData = {
 			name: name || category.name,
@@ -90,7 +88,7 @@ const updateCategory = async (req: Request, res: Response) => {
 		return successResponse(res, `Category updated successfully`);
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 
@@ -102,13 +100,13 @@ const deleteCategory = async (req: Request, res: Response) => {
 	}
 	const { id } = req.params;
 	try {
-		const checkCategory = await DB.categories.findOne({ where: { id } });
+		const checkCategory = await Categories.findOne({ where: { id } });
 		if (!checkCategory) return errorResponse(res, `Category with ID ${id} not found!`);
 		await checkCategory.destroy({ force: true });
 		return successResponse(res, `Category with ID ${id} deleted successfully!`);
 	} catch (error) {
 		console.log(error);
-		return handleResponse(res, 401, false, `An error occured - ${error}`);
+		return handleResponse(res, 401, false, `An error occurred - ${error}`);
 	}
 };
 
@@ -123,7 +121,7 @@ const deleteMultipleCategories = async (req: Request, res: Response) => {
 		let errorArr = [];
 		let successArr = [];
 		for (let i = 0; i < ids.length; i++) {
-			const checkCategory = await DB.addresses.findOne({
+			const checkCategory = await Categories.findOne({
 				where: { id: ids[i] },
 			});
 			if (checkCategory) {
@@ -143,7 +141,7 @@ const deleteMultipleCategories = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.log(error);
-		return errorResponse(res, `An error occured - ${error}`);
+		return errorResponse(res, `An error occurred - ${error}`);
 	}
 };
 

@@ -2,35 +2,26 @@
 OTP TABLE
 *************************************************************************/
 
-import { DataTypes } from "sequelize";
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
-export default function (sequelize: any, Sequelize: any) {
-	var Otp = sequelize.define(
-		'otp',
-		{
-			id: {
-				type: Sequelize.UUID,
-				defaultValue: Sequelize.UUIDV4,
-				primaryKey: true,
-			},
-			otp: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			expirationTime: {
-				type: Sequelize.DATE,
-				allowNull: false,
-			},
-			verified: {
-				type: Sequelize.BOOLEAN,
-				defaultValue: false,
-			},
-			verifiedAt: Sequelize.DATE,
-		},
-		{
-			freezeTableName: true,
-		}
-	);
+@Table({ timestamps: true, tableName: 'otp' })
+export class Otp extends Model {
+	@Column({
+		primaryKey: true,
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	id!: string;
 
-	return Otp;
+	@Column({ type: DataType.STRING, allowNull: false })
+	otp!: string;
+
+	@Column({ type: DataType.DATE, allowNull: false })
+	expirationTime!: Date;
+
+	@Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+	verified!: boolean;
+
+	@Column(DataType.DATE)
+	verifiedAt?: Date;
 }

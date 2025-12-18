@@ -1,8 +1,22 @@
 // Import packages
-import { NextFunction, Router } from 'express';
+import { Router } from 'express';
 
 // Import function files
-import { preLogin, register, updatePassword, resetPassword, changePassword, verifyOtp, updateUserSettings, updateProfileSettings, addAccount, changeRole, sendUserOtp } from './controllers/authentication';
+import {
+	preLogin,
+	register,
+	updatePassword,
+	resetPassword,
+	changePassword,
+	verifyOtp,
+	updateUserSettings,
+	updateProfileSettings,
+	addAccount,
+	sendUserOtp,
+	uploadProfile,
+	updateUserStatus,
+	updateUser,
+} from './controllers/authentication';
 import admin from './controllers/admins';
 import business from './controllers/businesses';
 import mda from './controllers/mdas';
@@ -11,9 +25,10 @@ import category from './controllers/categories';
 import revenueHead from './controllers/revenueHeads';
 import invoice from './controllers/invoices';
 import validate from './validate';
-import { isAdmin, isAdminOrStaff, isAuthorized, isStaff } from './helpers/middlewares';
-import { AdminRoles, StaffRoles } from './helpers/types';
+import { isAdmin, isAuthorized } from './helpers/middlewares';
 import payments from './controllers/payments';
+import { uploadFile } from './helpers/upload';
+import { AdminRoles } from './models/Admins';
 
 const router = Router();
 
@@ -36,7 +51,9 @@ router.post('/verify-otp', validate('/verify-otp'), verifyOtp);
 router.get('/otp/send', isAuthorized, sendUserOtp);
 router.post('/update-user-settings', validate('/update-user-settings'), updateUserSettings);
 router.post('/update-profile-settings', isAuthorized, validate('/update-profile-settings'), updateProfileSettings);
-router.post('/change-role', isAuthorized, validate('/change-role'), changeRole);
+router.post('/update-user', isAuthorized, validate('/update-user'), updateUser);
+router.post('/update-user-status', validate('/update-user-status'), updateUserStatus);
+router.post('/update-picture/:dir?', isAuthorized, validate('/update-picture'), uploadFile.single('file'), uploadProfile);
 
 router.post('/admin/register', validate('/register'), admin.register);
 router.post('/admin/login', validate('/login'), admin.login);
@@ -93,6 +110,5 @@ router.get('/role/get-details/:id', validate('id'), role.getRole);
 router.delete('/role/delete/:id', validate('id'), role.deleteRole);
 router.post('/role/create', role.createRole);
 router.post('/role/update/:id', role.updateRole);
-
 
 export default router;

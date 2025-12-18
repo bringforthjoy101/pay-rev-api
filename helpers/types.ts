@@ -1,3 +1,7 @@
+import { AdminRoles } from '../models/Admins';
+import { Roles } from '../models/Role';
+import { StaffMdas } from '../models/StaffMdas';
+
 export type RegisterDataType = {
 	names: string;
 	phone: string;
@@ -6,6 +10,7 @@ export type RegisterDataType = {
 	businessId?: string;
 	branchId?: string;
 	role?: string;
+	roleId?: string;
 };
 
 export type StaffRegisterDataType = {
@@ -20,12 +25,14 @@ export type StaffRegisterDataType = {
 };
 
 export type AuthPayloadDataType = {
-	id: number;
+	id: string;
 	names: string;
 	phone: string;
 	email: string;
 	status: string;
-	role?: string;
+	avatar?: string;
+	role?: Roles | AdminRoles;
+	mdas?: StaffMdas[];
 	type: string;
 	businessId?: string;
 };
@@ -69,7 +76,7 @@ export type OtpDetailsDataType = {
 	password?: string;
 	success: boolean;
 	message: string;
-	otpId: number;
+	otpId: number | string;
 };
 export enum typeEnum {
 	VERIFICATION = 'verification',
@@ -107,7 +114,7 @@ export type PaymentNotifTemplateDataType = {
 
 export type VerifyOtpDataType = {
 	token: string;
-	otp: number;
+	otp: string;
 	email: string;
 	type: typeEnum;
 };
@@ -137,10 +144,6 @@ export type PrepareSmsDataType = {
 	recipents: string;
 };
 
-export enum AdminRoles {
-	CONTROL = 'control',
-	SUPPORT = 'support',
-}
 export enum StaffRoles {
 	FIELD = 'field',
 	ADMIN = 'admin',
