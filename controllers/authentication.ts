@@ -158,17 +158,17 @@ export const preLogin = async (req: Request, res: Response) => {
 		});
 
 		if (staff) {
-			const TwoFaSettings = staff.staffSetting.dataValues.twoFa;
-			if (TwoFaSettings) {
-				const sendOtpResponse: FnResponseDataType = await sendOtp({ email, password, type: typeEnum.TWOFA });
-				if (!sendOtpResponse.status) return errorResponse(res, sendOtpResponse.message);
-				const data: TokenDataType = { type: '2fa', token: sendOtpResponse.data };
-				return successResponse(res, sendOtpResponse.message, data);
-			} else {
-				const loginResponse: FnResponseDataType = await login({ email, password });
-				if (!loginResponse.status) return errorResponse(res, loginResponse.message);
-				return successResponse(res, loginResponse.message, loginResponse.data);
-			}
+			// const TwoFaSettings = staff.staffSetting.dataValues.twoFa;
+			// if (TwoFaSettings) {
+			// 	const sendOtpResponse: FnResponseDataType = await sendOtp({ email, password, type: typeEnum.TWOFA });
+			// 	if (!sendOtpResponse.status) return errorResponse(res, sendOtpResponse.message);
+			// 	const data: TokenDataType = { type: '2fa', token: sendOtpResponse.data };
+			// 	return successResponse(res, sendOtpResponse.message, data);
+			// } else {
+			const loginResponse: FnResponseDataType = await login({ email, password });
+			if (!loginResponse.status) return errorResponse(res, loginResponse.message);
+			return successResponse(res, loginResponse.message, loginResponse.data);
+			// }
 		} else {
 			return handleResponse(res, 401, false, `Incorrect Email`);
 		}
